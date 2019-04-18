@@ -1,2 +1,2 @@
 # btsearch
-search latest bit torrent by title
+Search latest bit torrent by title.
