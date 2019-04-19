@@ -5,11 +5,12 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by ym on 2019-04-19
@@ -19,7 +20,7 @@ public class BDecode {
     private int i;
     private int n;
 
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception {
         ByteBuf buf = Unpooled.copiedBuffer("d4:spaml1:a1:bee".getBytes());
         BDecode bDecode = new BDecode(buf);
         Map<String, Object> parse = bDecode.parse();
@@ -71,13 +72,13 @@ public class BDecode {
             }
 
             //暂时不保存。
-            if("pieces".equals(key)){
+            if ("pieces".equals(key)) {
                 val = "...";
             }
 
             if ("creation date".equals(key)) {
                 //因为是unix time 所以*1000
-                val = new DateTime((long)val*1000).toString("yyyy-MM-dd HH:hh:ss");
+                val = new DateTime((long) val * 1000).toString("yyyy-MM-dd HH:hh:ss");
             }
 
             dic.put(key, val);
@@ -148,7 +149,7 @@ public class BDecode {
         if (c != ':') {
             throw new RuntimeException("not equal ':' ");
         }
-        byte[] bytes = new byte[(int)num];
+        byte[] bytes = new byte[(int) num];
         this.buf.readBytes(bytes);
         String s = new String(bytes);
         this.i += num;
