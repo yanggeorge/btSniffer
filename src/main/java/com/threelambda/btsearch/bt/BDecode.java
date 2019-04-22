@@ -13,9 +13,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 解析bencoding
  * Created by ym on 2019-04-19
  */
-public class BDecode {
+
+class BDecode {
     private ByteBuf buf;
     private int i;
     private int n;
