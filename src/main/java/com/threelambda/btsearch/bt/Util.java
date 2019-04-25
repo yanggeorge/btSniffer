@@ -66,7 +66,7 @@ public class Util {
         return pack((byte) 0, bytes);
     }
 
-    public static ByteBuf getMetadataPieceRequest(int piece, int extId){
+    public static ByteBuf getMetadataPieceRequest(int piece, int extId) {
         Map<String, Object> dic = new HashMap<>();
         dic.put("msg_type", 0);
         dic.put("piece", piece);
@@ -141,7 +141,7 @@ public class Util {
         for (int i = 0; i < n; i++) {
 
             // generate a random number between
-            // 0 to AlphaNumericString variable length
+            // 0 to AlphaNumericString variable READ_MSG_LENGTH
             int index
                     = (int) (AlphaNumericString.length()
                     * Math.random());

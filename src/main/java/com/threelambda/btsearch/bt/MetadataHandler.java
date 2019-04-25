@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Created by ym on 2019-04-24
  */
-public class HandshakeHandler extends SimpleChannelInboundHandler<HandshakeMsg> {
+public class MetadataHandler extends SimpleChannelInboundHandler<Msg> {
 
     private Logger logger = LoggerFactory.getLogger(SimpleChannelInboundHandler.class);
 
@@ -24,7 +24,7 @@ public class HandshakeHandler extends SimpleChannelInboundHandler<HandshakeMsg> 
     private int metadataSize = -1;
 
 
-    HandshakeHandler(String infoHash) {
+    MetadataHandler(String infoHash) {
         this.infoHash = infoHash;
     }
 
@@ -37,14 +37,13 @@ public class HandshakeHandler extends SimpleChannelInboundHandler<HandshakeMsg> 
 
 
     @Override
-    protected void channelRead0(ChannelHandlerContext context, HandshakeMsg msg) {
-        if (msg instanceof HandshakeOkMsg) {
+    protected void channelRead0(ChannelHandlerContext context, Msg msg) {
+        if (msg instanceof Msg.HandshakeOkMsg) {
             //握手成功，进行扩展协议的握手的请求。
-            logger.info("ext handshake request");
             context.writeAndFlush(Util.getExtHandshake());
-        } else if (msg instanceof MetadataMsg) {
+        } else if (msg instanceof Msg.MetadataMsg) {
             //请求数据
-            MetadataMsg metadataMsg = (MetadataMsg) msg;
+            Msg.MetadataMsg metadataMsg = (Msg.MetadataMsg) msg;
             int BLOCK_SIZE = 16384;
             metadataSize = metadataMsg.getMetadataSize();
             pieces = metadataMsg.getMetadataSize() / BLOCK_SIZE;
@@ -57,24 +56,28 @@ public class HandshakeHandler extends SimpleChannelInboundHandler<HandshakeMsg> 
             }
             context.writeAndFlush(buf);
             this.dataMap = new HashMap<>();
-        } else if (msg instanceof MetadataPieceMsg) {
-            MetadataPieceMsg pieceMsg = (MetadataPieceMsg) msg;
+        } else if (msg instanceof Msg.MetadataPieceMsg) {
+            Msg.MetadataPieceMsg pieceMsg = (Msg.MetadataPieceMsg) msg;
             this.dataMap.put(pieceMsg.getPiece(), pieceMsg.getPieceData());
             if (this.dataMap.size() == this.pieces) {
                 //已经完成，检查infoHash
-                ByteBuf data = Unpooled.buffer();
-                for (int i = 0; i < pieces; i++) {
-                    data.writeBytes(this.dataMap.get(i));
-                }
-                if (data.readableBytes() == this.metadataSize) {
-                    byte[] metadata = new byte[this.metadataSize];
-                    data.readBytes(metadata);
-                    String infoHash = DigestUtils.sha1Hex(metadata);
-                    if (this.infoHash.equals(infoHash)) {
-                        logger.info("get metadata success.");
-                        context.close();
-                    }
-                }
+                checkInfoHash(context);
+            }
+        }
+    }
+
+    private void checkInfoHash(ChannelHandlerContext context) {
+        ByteBuf data = Unpooled.buffer();
+        for (int i = 0; i < pieces; i++) {
+            data.writeBytes(this.dataMap.get(i));
+        }
+        if (data.readableBytes() == this.metadataSize) {
+            byte[] metadata = new byte[this.metadataSize];
+            data.readBytes(metadata);
+            String infoHash = DigestUtils.sha1Hex(metadata);
+            if (this.infoHash.equals(infoHash)) {
+                logger.info("get metadata success.");
+                context.close();
             }
         }
     }

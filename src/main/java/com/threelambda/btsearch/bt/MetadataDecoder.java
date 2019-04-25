@@ -15,22 +15,22 @@ import java.util.Map;
 /**
  * Created by ym on 2019-04-25
  */
-public class HandshakeDecoder extends ByteToMessageDecoder {
+public class MetadataDecoder extends ByteToMessageDecoder {
 
-    private enum State {init, other}
+    private enum State {INIT, OTHER}
 
-    private enum ExtState {length, data}
+    private enum ExtState {READ_MSG_LENGTH, READ_DATA}
 
-    private State state = State.init;
-    private ExtState extState = ExtState.length;
-    private int extMsgLength = 0;
+    private State state = State.INIT;
+    private ExtState readState = ExtState.READ_MSG_LENGTH;
+    private int msgLength = 0;
 
-    private Logger logger = LoggerFactory.getLogger(HandshakeDecoder.class);
+    private Logger logger = LoggerFactory.getLogger(MetadataDecoder.class);
 
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf buf, List<Object> list) throws Exception {
-        if (State.init.equals(this.state)) {
+        if (State.INIT.equals(this.state)) {
             if (buf.readableBytes() < 68) {
                 return;
             }
@@ -57,31 +57,29 @@ public class HandshakeDecoder extends ByteToMessageDecoder {
             buffer.release();
             logger.info("decode: infoHash={}, peerId={}", infoHash, peerId);
 
-            list.add(new HandshakeOkMsg());
-            this.state = State.other;
+            list.add(new Msg.HandshakeOkMsg());
+            this.state = State.OTHER;
         }
 
         while (buf.readableBytes() > 0) {
-            switch (this.extState) {
-                case length:
+            switch (this.readState) {
+                case READ_MSG_LENGTH:
                     if (buf.readableBytes() < 4) {
                         return;
                     }
-
-                    extMsgLength = buf.readInt();
-                    this.extState = ExtState.data;
+                    msgLength = buf.readInt();
+                    this.readState = ExtState.READ_DATA;
                     break;
-                case data:
-                    if (buf.readableBytes() < extMsgLength) {
+                case READ_DATA:
+                    if (buf.readableBytes() < msgLength) {
                         return;
                     }
-                    ByteBuf tmp = buf.readBytes(extMsgLength);
+                    ByteBuf tmp = buf.readBytes(msgLength);
                     int id = (int) tmp.readByte();
                     switch (id) {
                         case 20: // ext protocol
-
                             int extId = (int) tmp.readByte();
-                            ByteBuf bufData = tmp.readBytes(extMsgLength - 2);
+                            ByteBuf bufData = tmp.readBytes(msgLength - 2);
                             Map<String, Object> dic = Util.parse(bufData);
                             switch (extId) {
                                 case 0: // ext handshake
@@ -89,14 +87,14 @@ public class HandshakeDecoder extends ByteToMessageDecoder {
                                     logger.info(dic.toString());
                                     Map<String, Object> metadataDic = (Map<String, Object>) dic.get("m");
                                     long utMetadata = (long) metadataDic.get("ut_metadata");
-                                    list.add(new MetadataMsg((int)metadataSize, (int) utMetadata));
+                                    list.add(new Msg.MetadataMsg((int) metadataSize, (int) utMetadata));
                                     break;
                                 case 1: //ut_metadata
-                                    long piece =  (long)dic.get("piece");
+                                    long piece = (long) dic.get("piece");
                                     byte[] data = new byte[bufData.readableBytes()];
                                     bufData.readBytes(data);
                                     logger.info("piece={}, length={}", piece, data.length);
-                                    list.add(new MetadataPieceMsg((int)piece, data));
+                                    list.add(new Msg.MetadataPieceMsg((int) piece, data));
                                     break;
                                 default:
                                     logger.error("error");
@@ -112,7 +110,7 @@ public class HandshakeDecoder extends ByteToMessageDecoder {
                     }
 
                     tmp.release();
-                    this.extState = ExtState.length;
+                    this.readState = ExtState.READ_MSG_LENGTH;
                     break;
                 default:
                     logger.error("error");

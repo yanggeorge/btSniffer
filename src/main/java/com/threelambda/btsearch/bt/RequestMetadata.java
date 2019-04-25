@@ -8,8 +8,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 
 import java.net.InetSocketAddress;
 
@@ -21,9 +19,7 @@ public class RequestMetadata {
     public static void main(String[] args) throws Exception {
         String currentIpOnMac = Util.getCurrentIpOnMac();
         System.out.println(currentIpOnMac);
-
         start(currentIpOnMac, 40959);
-//        start("127.0.0.1", 8108);
     }
 
     private static void start(String addr, int port) throws InterruptedException {
@@ -32,15 +28,14 @@ public class RequestMetadata {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap b = new Bootstrap();
-
             b.group(group)
                     .channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         protected void initChannel(SocketChannel sc) throws Exception {
                             ChannelPipeline p = sc.pipeline();
 //                            p.addLast(new LoggingHandler(LogLevel.INFO));
-                            p.addLast(new HandshakeDecoder());
-                            p.addLast(new HandshakeHandler(infoHash));
+                            p.addLast(new MetadataDecoder());
+                            p.addLast(new MetadataHandler(infoHash));
                         }
                     });
             ChannelFuture channelFuture = b.connect(new InetSocketAddress(addr, port)).sync();
