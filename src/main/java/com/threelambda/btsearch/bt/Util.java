@@ -62,16 +62,27 @@ public class Util {
         Map<String, Object> metaDic = new HashMap<>();
         dic.put("m", metaDic);
         metaDic.put("ut_metadata", 1);
-
         byte[] bytes = Util.encode(dic);
+        return pack((byte) 0, bytes);
+    }
 
+    public static ByteBuf getMetadataPieceRequest(int piece, int extId){
+        Map<String, Object> dic = new HashMap<>();
+        dic.put("msg_type", 0);
+        dic.put("piece", piece);
+        byte[] bytes = Util.encode(dic);
+        return pack((byte) extId, bytes);
+    }
+
+    private static ByteBuf pack(byte extId, byte[] bytes) {
         ByteBuf buf = Unpooled.buffer();
         buf.writeInt(bytes.length + 2);
         buf.writeByte((byte) 20);
-        buf.writeByte((byte) 0);
+        buf.writeByte(extId);
         buf.writeBytes(bytes);
         return buf;
     }
+
 
     /**
      * 获取outbound ip ，not work on mac

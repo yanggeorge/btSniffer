@@ -81,12 +81,22 @@ public class HandshakeDecoder extends ByteToMessageDecoder {
                         case 20: // ext protocol
 
                             int extId = (int) tmp.readByte();
+                            ByteBuf bufData = tmp.readBytes(extMsgLength - 2);
+                            Map<String, Object> dic = Util.parse(bufData);
                             switch (extId) {
                                 case 0: // ext handshake
-                                    Map<String, Object> dic = Util.parse(tmp);
+                                    long metadataSize = (long) dic.get("metadata_size");
                                     logger.info(dic.toString());
+                                    Map<String, Object> metadataDic = (Map<String, Object>) dic.get("m");
+                                    long utMetadata = (long) metadataDic.get("ut_metadata");
+                                    list.add(new MetadataMsg((int)metadataSize, (int) utMetadata));
                                     break;
                                 case 1: //ut_metadata
+                                    long piece =  (long)dic.get("piece");
+                                    byte[] data = new byte[bufData.readableBytes()];
+                                    bufData.readBytes(data);
+                                    logger.info("piece={}, length={}", piece, data.length);
+                                    list.add(new MetadataPieceMsg((int)piece, data));
                                     break;
                                 default:
                                     logger.error("error");
@@ -94,13 +104,11 @@ public class HandshakeDecoder extends ByteToMessageDecoder {
 
                             break;
                         case 9: // port
-                            int port = tmp.readInt();
+                            int port = tmp.readUnsignedShort();
                             logger.info("peer port = {}", port);
                             break;
-                        case 1: // ignore
-                            break;
                         default:
-                            logger.error("error");
+                            //ignore
                     }
 
                     tmp.release();

@@ -35,16 +35,15 @@ public class RequestMetadata {
 
             b.group(group)
                     .channel(NioSocketChannel.class)
-                    .remoteAddress(new InetSocketAddress(addr, port))
                     .handler(new ChannelInitializer<SocketChannel>() {
                         protected void initChannel(SocketChannel sc) throws Exception {
                             ChannelPipeline p = sc.pipeline();
-                            p.addLast(new LoggingHandler(LogLevel.INFO));
+//                            p.addLast(new LoggingHandler(LogLevel.INFO));
                             p.addLast(new HandshakeDecoder());
                             p.addLast(new HandshakeHandler(infoHash));
                         }
                     });
-            ChannelFuture channelFuture = b.connect().sync();
+            ChannelFuture channelFuture = b.connect(new InetSocketAddress(addr, port)).sync();
             channelFuture.channel().closeFuture().sync();
         } finally {
             group.shutdownGracefully().sync();
