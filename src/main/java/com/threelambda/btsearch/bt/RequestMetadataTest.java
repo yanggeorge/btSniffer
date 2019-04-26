@@ -8,13 +8,15 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 
 import java.net.InetSocketAddress;
 
 /**
  * Created by ym on 2019-04-23
  */
-public class RequestMetadata {
+public class RequestMetadataTest {
 
     public static void main(String[] args) throws Exception {
         String currentIpOnMac = Util.getCurrentIpOnMac();
