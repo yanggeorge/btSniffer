@@ -12,6 +12,10 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by ym on 2019-04-23
@@ -27,6 +31,7 @@ public class RequestMetadataTest {
     private static void start(String addr, int port) throws InterruptedException {
 
         final String infoHash = "e84213a794f3ccd890382a54a64ca68b7e925433";
+        final BlockingQueue<Metadata> queue = new LinkedBlockingQueue();
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap b = new Bootstrap();
@@ -37,11 +42,13 @@ public class RequestMetadataTest {
                             ChannelPipeline p = sc.pipeline();
 //                            p.addLast(new LoggingHandler(LogLevel.INFO));
                             p.addLast(new MetadataDecoder());
-                            p.addLast(new MetadataHandler(infoHash));
+                            p.addLast(new MetadataHandler(infoHash, addr, port, queue));
                         }
                     });
             ChannelFuture channelFuture = b.connect(new InetSocketAddress(addr, port)).sync();
             channelFuture.channel().closeFuture().sync();
+            Metadata metadata = queue.poll(1, TimeUnit.SECONDS);
+            System.out.println(Util.parse(metadata.getMetadata()));
         } finally {
             group.shutdownGracefully().sync();
         }

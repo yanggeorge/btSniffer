@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by ym on 2019-04-24
@@ -19,13 +21,22 @@ public class MetadataHandler extends SimpleChannelInboundHandler<Msg> {
     private Logger logger = LoggerFactory.getLogger(SimpleChannelInboundHandler.class);
 
     private final String infoHash;
+    private final String addr;
+    private final int port;
+
+    private BlockingQueue<Metadata> queue;
+
     private Map<Integer, byte[]> dataMap = null;
     private int pieces = -1;
     private int metadataSize = -1;
+    private byte[] metadata = null;
 
 
-    MetadataHandler(String infoHash) {
+    MetadataHandler(String infoHash, String addr, int port, BlockingQueue<Metadata> queue) {
         this.infoHash = infoHash;
+        this.addr = addr;
+        this.port = port;
+        this.queue = queue;
     }
 
 
@@ -61,25 +72,33 @@ public class MetadataHandler extends SimpleChannelInboundHandler<Msg> {
             this.dataMap.put(pieceMsg.getPiece(), pieceMsg.getPieceData());
             if (this.dataMap.size() == this.pieces) {
                 //已经完成，检查infoHash
-                checkInfoHash(context);
+                if (checkInfoHash()) {
+                    try {
+                        queue.offer(new Metadata(infoHash, metadataSize, metadata, addr, port), 1, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        logger.error("", e);
+                    }
+                    context.close();
+                }
             }
         }
     }
 
-    private void checkInfoHash(ChannelHandlerContext context) {
+    private boolean checkInfoHash() {
         ByteBuf data = Unpooled.buffer();
         for (int i = 0; i < pieces; i++) {
             data.writeBytes(this.dataMap.get(i));
         }
         if (data.readableBytes() == this.metadataSize) {
-            byte[] metadata = new byte[this.metadataSize];
+            metadata = new byte[this.metadataSize];
             data.readBytes(metadata);
             String infoHash = DigestUtils.sha1Hex(metadata);
             if (this.infoHash.equals(infoHash)) {
                 logger.info("get metadata success.");
-                context.close();
+                return true;
             }
         }
+        return false;
     }
 
 
