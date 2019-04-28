@@ -68,7 +68,7 @@ public class MetadataDecoder extends ByteToMessageDecoder {
                         return;
                     }
                     msgLength = buf.readInt();
-                    if(msgLength == 0) continue;
+                    if (msgLength == 0) continue;
                     this.readState = ExtState.READ_DATA;
                     break;
                 case READ_DATA:
