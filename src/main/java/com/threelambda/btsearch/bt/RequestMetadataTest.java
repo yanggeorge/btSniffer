@@ -28,7 +28,7 @@ public class RequestMetadataTest {
         start(currentIpOnMac, 40959);
     }
 
-    private static void start(String addr, int port) throws InterruptedException {
+    private static void start(String ip, int port) throws InterruptedException {
 
         final String infoHash = "e84213a794f3ccd890382a54a64ca68b7e925433";
         final BlockingQueue<Metadata> queue = new LinkedBlockingQueue();
@@ -42,10 +42,10 @@ public class RequestMetadataTest {
                             ChannelPipeline p = sc.pipeline();
 //                            p.addLast(new LoggingHandler(LogLevel.INFO));
                             p.addLast(new MetadataDecoder());
-                            p.addLast(new MetadataHandler(infoHash, addr, port, queue));
+                            p.addLast(new MetadataHandler(infoHash, ip, port, queue));
                         }
                     });
-            ChannelFuture channelFuture = b.connect(new InetSocketAddress(addr, port)).sync();
+            ChannelFuture channelFuture = b.connect(new InetSocketAddress(ip, port)).sync();
             channelFuture.channel().closeFuture().sync();
             Metadata metadata = queue.poll(1, TimeUnit.SECONDS);
             System.out.println(Util.parse(metadata.getMetadata()));
