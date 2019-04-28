@@ -1,8 +1,12 @@
 package com.threelambda.btsearch.bt;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
+import io.netty.buffer.Unpooled;
 import org.joda.time.DateTime;
 
 import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 /**
@@ -33,6 +37,13 @@ public class Node {
         String ip = Util.getAddr(Arrays.copyOfRange(compactInfo, 20, 24));
         int port = Util.getPort(Arrays.copyOfRange(compactInfo, 24, 26));
         return new Node(id, ip, port);
+    }
+
+    public byte[] compactNodeInfo() {
+        ByteBuf buf = Unpooled.buffer(26);
+        buf.writeBytes(this.id.getData());
+        buf.writeBytes(encodeCompactAddress(this.addr));
+        return buf.array();
     }
 
     public static byte[] encodeCompactAddress(String ip, int port) {
@@ -70,6 +81,14 @@ public class Node {
         String ip = Util.getAddr(Arrays.copyOfRange(compactAddress, 0, 4));
         int port = Util.getPort(Arrays.copyOfRange(compactAddress, 4, 6));
         System.out.printf("%s, %d\n", ip, port);
+
+        byte[] a = new byte[]{(byte) 0xC0, (byte) 0xa8, (byte) 0x00, (byte) 0x01, (byte) 0x04, (byte) 0x38};
+        String s = new String(a, Charset.forName("ISO-8859-1"));
+        System.out.println(s.length());
+        System.out.println(ByteBufUtil.hexDump(a));
+        System.out.println(ByteBufUtil.hexDump(s.getBytes(Charset.forName("ISO-8859-1"))));
+
+
     }
 
 }

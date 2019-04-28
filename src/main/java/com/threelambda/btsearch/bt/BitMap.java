@@ -1,5 +1,6 @@
 package com.threelambda.btsearch.bt;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 /**
@@ -77,9 +78,12 @@ public class BitMap {
     }
 
     public String rawString() {
-        return new String(this.data);
+        return new String(this.data, Charset.forName("ISO-8859-1"));
     }
 
+    public byte[] getData() {
+        return data;
+    }
 
     public int compare(BitMap other, int prefixLen) {
         if (prefixLen > this.size || prefixLen > other.size) {
