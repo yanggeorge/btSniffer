@@ -85,6 +85,14 @@ public class BitMap {
         return data;
     }
 
+    public void setData(byte[] data) {
+        this.data = data;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
     public int compare(BitMap other, int prefixLen) {
         if (prefixLen > this.size || prefixLen > other.size) {
             throw new RuntimeException("index out of range");

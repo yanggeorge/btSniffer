@@ -10,6 +10,7 @@ import java.net.DatagramSocket;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -162,4 +163,43 @@ public class Util {
         return port[0] << 8 | (port[1] & 0xFF);
     }
 
+
+    /**
+     * 如果prefix = 0101
+     * 那么childId = 0101... (160 bit)
+     *
+     * @param prefix 前缀
+     * @return
+     */
+    public static BitMap randomChildId(BitMap prefix) {
+        String peerId = Util.getPeerId();
+        byte[] data = peerId.getBytes(Charset.forName("ISO-8859-1"));
+        //设置data与prefix的相同
+        byte[] prefixData = prefix.getData();
+        int prefixSize = prefix.getSize();
+        int div = prefixSize / 8;
+        int mod = prefixSize % 8;
+        for (int i = 0; i < div; i++) {
+            data[i] = prefixData[i];
+        }
+        BitMap id = new BitMap(data.length * 8);
+        id.setData(data);
+        for (int i = div * 8; i < div * 8 + mod; i++) {
+            if (prefix.bit(i) > 0) {
+                id.set(i);
+            } else {
+                id.unset(i);
+            }
+        }
+        return id;
+    }
+
+    public static void main(String[] args) {
+        BitMap prefix = new BitMap(4);
+        prefix.set(1);
+        prefix.set(3);
+        System.out.println(prefix.toString());
+        BitMap randomChildId = Util.randomChildId(prefix);
+        System.out.println(randomChildId.toString());
+    }
 }
