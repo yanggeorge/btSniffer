@@ -138,6 +138,23 @@ public class BitMap {
         return distance;
     }
 
+    public static BitMap newBitMapFrom(BitMap other,int size){
+        BitMap bitMap = new BitMap(size);
+        if (size > other.getSize()) {
+            size = other.getSize();
+        }
+
+        int div = size/8;
+        if (div >= 0) System.arraycopy(other.data, 0, bitMap.data, 0, div);
+
+        for (int i = div*8; i < size ; i++) {
+            if(other.bit(i) == 0){
+                bitMap.set(i);
+            }
+        }
+        return bitMap;
+    }
+
     public static void main(String[] args) {
         BitMap bitMap = new BitMap(10);
         bitMap.set(2);
