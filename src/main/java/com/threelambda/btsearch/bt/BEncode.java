@@ -37,8 +37,7 @@ class BEncode {
     public static void encodeToDic(ByteBuf buf, Map<String, Object> map) {
         buf.writeByte('d');
 
-        List<String> keys = new ArrayList<>();
-        keys.addAll(map.keySet());
+        List<String> keys = new ArrayList<>(map.keySet());
         Collections.sort(keys);
 
         for (String key : keys) {
