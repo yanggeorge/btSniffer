@@ -54,7 +54,7 @@ public class Util {
         handshake.writeByte((byte) 0x00);
         handshake.writeByte((byte) 0x01);
         handshake.writeBytes(ByteBufUtil.decodeHexDump(infoHash));
-        handshake.writeBytes(Util.getPeerId().getBytes());
+        handshake.writeBytes(Util.createPeerId().getBytes());
         return handshake;
     }
 
@@ -125,7 +125,7 @@ public class Util {
         return ip;
     }
 
-    public static String getPeerId() {
+    public static String createPeerId() {
         return getAlphaNumericString(20);
     }
 
@@ -172,7 +172,7 @@ public class Util {
      * @return
      */
     public static BitMap randomChildId(BitMap prefix) {
-        String peerId = Util.getPeerId();
+        String peerId = Util.createPeerId();
         byte[] data = peerId.getBytes(Charset.forName("ISO-8859-1"));
         //设置data与prefix的相同
         byte[] prefixData = prefix.getData();

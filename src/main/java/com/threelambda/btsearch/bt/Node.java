@@ -1,18 +1,24 @@
 package com.threelambda.btsearch.bt;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
+import lombok.Data;
 import org.joda.time.DateTime;
 
+import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.LinkedList;
 
 /**
  * Created by ym on 2019-04-28
  */
-public class Node {
+@Data
+public class Node implements Serializable, Comparable<Node> {
 
     private final InetSocketAddress addr;
     private final BitMap id;
@@ -63,16 +69,19 @@ public class Node {
         return encodeCompactAddress(ip, port);
     }
 
-    public DateTime getLastActiveTime() {
-        return lastActiveTime;
+    @Override
+    public int compareTo(Node o) {
+        return this.id.rawString().compareTo(o.getId().rawString());
     }
 
-    public InetSocketAddress getAddr() {
-        return addr;
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Node && this.id.rawString().equals(((Node) obj).getId().rawString());
     }
 
-    public BitMap getId() {
-        return id;
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id.rawString());
     }
 
     public static void main(String[] args) {
@@ -89,6 +98,13 @@ public class Node {
         System.out.println(ByteBufUtil.hexDump(s.getBytes(Charset.forName("ISO-8859-1"))));
 
 
+        LinkedList<Node> list = Lists.newLinkedList();
+        byte[] peerId = Util.createPeerId().getBytes();
+        Node node1 = new Node(peerId, ip, port);
+        list.add(node1);
+        Node node2 = new Node(peerId, ip, 25);
+        assert list.contains(node2) ;
+        list.remove(node2);
+        assert list.size() == 0;
     }
-
 }
