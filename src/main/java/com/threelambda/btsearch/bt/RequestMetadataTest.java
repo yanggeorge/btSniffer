@@ -10,6 +10,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.BlockingDeque;
@@ -20,11 +21,12 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by ym on 2019-04-23
  */
+@Slf4j
 public class RequestMetadataTest {
 
     public static void main(String[] args) throws Exception {
         String currentIpOnMac = Util.getCurrentIpOnMac();
-        System.out.println(currentIpOnMac);
+        log.info("currentIp={}",currentIpOnMac);
         start(currentIpOnMac, 40959);
     }
 
@@ -48,7 +50,11 @@ public class RequestMetadataTest {
             ChannelFuture channelFuture = b.connect(new InetSocketAddress(ip, port)).sync();
             channelFuture.channel().closeFuture().sync();
             Metadata metadata = queue.poll(1, TimeUnit.SECONDS);
-            System.out.println(Util.parse(metadata.getMetadata()));
+            if(metadata!=null) {
+                log.info("{}",Util.parse(metadata.getMetadata()));
+            }else{
+                log.info("metadata is null");
+            }
         } finally {
             group.shutdownGracefully().sync();
         }
