@@ -138,21 +138,34 @@ public class BitMap {
         return distance;
     }
 
-    public static BitMap newBitMapFrom(BitMap other,int size){
+    public static BitMap newBitMapFrom(BitMap other, int size) {
         BitMap bitMap = new BitMap(size);
         if (size > other.getSize()) {
             size = other.getSize();
         }
 
-        int div = size/8;
+        int div = size / 8;
         if (div >= 0) System.arraycopy(other.data, 0, bitMap.data, 0, div);
 
-        for (int i = div*8; i < size ; i++) {
-            if(other.bit(i) == 0){
+        for (int i = div * 8; i < size; i++) {
+            if (other.bit(i) == 0) {
                 bitMap.set(i);
             }
         }
         return bitMap;
+    }
+
+    public static Integer getCommonPrefixLength(BitMap a, BitMap b) {
+
+        int size = a.getSize();
+        if (size > b.getSize()) {
+            size = b.getSize();
+        }
+
+        int i = 0;
+        while (i < size && a.bit(i) == b.bit(i)) i++;
+
+        return i;
     }
 
     public static void main(String[] args) {

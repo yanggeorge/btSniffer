@@ -32,12 +32,19 @@ public class KBucket {
         this.lastChanged = DateTime.now();
     }
 
-    public boolean insert(Node node) {
+    public synchronized boolean insert(Node node) {
         boolean isNew = !nodes.contains(node);
 
         nodes.push(node);
         this.updateLastChanged();
 
+        return isNew;
+    }
+
+    public synchronized boolean insertCandi(Node node) {
+        boolean isNew = !candidates.contains(node);
+        candidates.push(node);
+        this.updateLastChanged();
         return isNew;
     }
 
@@ -69,6 +76,14 @@ public class KBucket {
             nodes.push(node);
         }
         this.updateLastChanged();
+    }
+
+    public synchronized Integer getSizeOfNodes() {
+        return nodes.size();
+    }
+
+    public synchronized Integer getSizeOfCandidates() {
+        return candidates.size();
     }
 
 
