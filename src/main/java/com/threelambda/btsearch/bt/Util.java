@@ -33,7 +33,7 @@ public class Util {
     }
 
     public static void encode(ByteBuf buf, Map<String, Object> map) {
-        BEncode.encodeToDic(buf, map);
+        BEncode.encodeDic(buf, map);
     }
 
     public static byte[] encode(Map<String, Object> map) {
@@ -127,6 +127,10 @@ public class Util {
 
     public static String createPeerId() {
         return getAlphaNumericString(20);
+    }
+
+    public static String randomString(int n) {
+        return getAlphaNumericString(n);
     }
 
     private static String getAlphaNumericString(int n) {

@@ -28,20 +28,21 @@ class BEncode {
 
     public static byte[] encodeToBin(Map<String, Object> map) {
         ByteBuf buf = Unpooled.buffer();
-        encodeToDic(buf, map);
+        encodeDic(buf, map);
         byte[] arr = new byte[buf.readableBytes()];
         buf.getBytes(buf.readerIndex(), arr);
+        buf.release();
         return arr;
     }
 
-    public static void encodeToDic(ByteBuf buf, Map<String, Object> map) {
+    public static void encodeDic(ByteBuf buf, Map<String, Object> map) {
         buf.writeByte('d');
 
         List<String> keys = new ArrayList<>(map.keySet());
         Collections.sort(keys);
 
         for (String key : keys) {
-            BEncode.encodeToString(buf, key);
+            BEncode.encodeString(buf, key);
             BEncode.encodeElement(buf, map.get(key));
         }
 
@@ -49,7 +50,7 @@ class BEncode {
     }
 
 
-    private static void encodeToString(ByteBuf buf, String key) {
+    private static void encodeString(ByteBuf buf, String key) {
         byte[] bytes = key.getBytes();
         int length = bytes.length;
         buf.writeBytes(String.valueOf(length).getBytes());
@@ -59,13 +60,13 @@ class BEncode {
 
     private static void encodeElement(ByteBuf buf, Object o) {
         if (o instanceof String) {
-            BEncode.encodeToString(buf, (String) o);
+            BEncode.encodeString(buf, (String) o);
         } else if (o instanceof Integer) {
             BEncode.encodeInt(buf, (Integer) o);
         } else if (o instanceof List) {
             BEncode.encodeList(buf, (List) o);
         } else if (o instanceof Map) {
-            BEncode.encodeToDic(buf, (Map<String, Object>) o);
+            BEncode.encodeDic(buf, (Map<String, Object>) o);
         }
     }
 
