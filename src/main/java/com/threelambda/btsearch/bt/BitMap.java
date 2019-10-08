@@ -1,6 +1,8 @@
 package com.threelambda.btsearch.bt;
 
-import java.nio.charset.Charset;
+import com.google.common.base.Charsets;
+import com.threelambda.btsearch.bt.exception.BtSearchException;
+
 import java.util.Arrays;
 
 /**
@@ -25,7 +27,7 @@ public class BitMap {
 
     public int bit(int index) {
         if (index >= this.size) {
-            throw new RuntimeException("out of range");
+            throw new BtSearchException("out of range");
         }
 
         int div = index / 8;
@@ -33,20 +35,21 @@ public class BitMap {
         return (data[div] & (1 << (7 - mod))) >> (7 - mod);
     }
 
-    public void set(int index) {
+    public BitMap set(int index) {
         if (index >= this.size) {
-            throw new RuntimeException("out of range");
+            throw new BtSearchException("out of range");
         }
         int div = index / 8;
         int mod = index % 8;
         int shift = 1 << (7 - mod);
         data[div] |= shift;
+        return this;
     }
 
 
     public void unset(int index) {
         if (index >= this.size) {
-            throw new RuntimeException("out of range");
+            throw new BtSearchException("out of range");
         }
         int div = index / 8;
         int mod = index % 8;
@@ -60,10 +63,13 @@ public class BitMap {
         return bitMap;
     }
 
-    public static BitMap fromString(String s) {
-        return fromBytes(s.getBytes());
+    public static BitMap fromRawString(String s) {
+        return fromBytes(s.getBytes(Charsets.ISO_8859_1));
     }
 
+    /**
+     * @return "1001101001..."
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -77,8 +83,28 @@ public class BitMap {
         return sb.toString();
     }
 
+    /**
+     * @param s  "1001101001..."
+     * @return
+     */
+    public static BitMap fromString(String s) {
+        try {
+            BitMap bitMap = new BitMap(s.length());
+            for (int i = 0; i < s.length(); i++) {
+                char c = s.charAt(i);
+                if(c == '1'){
+                    bitMap.set(i);
+                }
+            }
+            return bitMap;
+        } catch (Exception e) {
+        }
+        return null;
+
+    }
+
     public String rawString() {
-        return new String(this.data, Charset.forName("ISO-8859-1"));
+        return new String(this.data, Charsets.ISO_8859_1);
     }
 
     public byte[] getData() {
@@ -95,16 +121,18 @@ public class BitMap {
 
     public int compare(BitMap other, int prefixLen) {
         if (prefixLen > this.size || prefixLen > other.size) {
-            throw new RuntimeException("index out of range");
+            throw new BtSearchException("index out of range");
         }
 
         int div = prefixLen / 8;
         int mod = prefixLen % 8;
 
         for (int i = 0; i < div; i++) {
-            if (this.data[i] > other.data[i]) {
+            int a = Byte.toUnsignedInt(this.data[i]);
+            int b = Byte.toUnsignedInt(other.data[i]);
+            if (a > b) {
                 return 1;
-            } else if (this.data[i] < other.data[i]) {
+            } else if (a < b) {
                 return -1;
             }
         }
@@ -148,7 +176,7 @@ public class BitMap {
         if (div >= 0) System.arraycopy(other.data, 0, bitMap.data, 0, div);
 
         for (int i = div * 8; i < size; i++) {
-            if (other.bit(i) == 0) {
+            if (other.bit(i) == 1) {
                 bitMap.set(i);
             }
         }
@@ -184,8 +212,11 @@ public class BitMap {
         System.out.println(bitMap2.toString());
         System.out.println(bitMap2.compare(bitMap, 10));
 
+        System.out.println("xor----");
+        System.out.println(bitMap.toString());
+        System.out.println(bitMap2.toString());
         System.out.println(bitMap.xor(bitMap2).toString());
-
+        System.out.println();
         byte[] data = new byte[4];
         data[0] = 0;
         data[1] = (byte) 255;
@@ -193,5 +224,17 @@ public class BitMap {
         data[3] = (byte) 255;
         BitMap bitMap3 = BitMap.fromBytes(data);
         System.out.println(bitMap3.toString());
+
+        BitMap id1 = new BitMap(160).set(0).set(2).set(3);
+        BitMap id2 = new BitMap(160).set(1).set(2).set(3);
+        System.out.println("----");
+        System.out.println(id1);
+        System.out.println(id2);
+        assert  id1.compare(id2, 160) == 1;
+        System.out.println("----");
+
+        System.out.println(BitMap.fromString("0101").toString());
     }
+
+
 }

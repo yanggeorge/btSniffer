@@ -1,5 +1,7 @@
-package com.threelambda.btsearch.bt;
+package com.threelambda.btsearch.bt.metadata;
 
+import com.threelambda.btsearch.bt.Msg;
+import com.threelambda.btsearch.bt.Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
@@ -68,7 +70,9 @@ public class MetadataDecoder extends ByteToMessageDecoder {
                         return;
                     }
                     msgLength = buf.readInt();
-                    if (msgLength == 0) continue;
+                    if (msgLength == 0) {
+                        continue;
+                    }
                     this.readState = ExtState.READ_DATA;
                     break;
                 case READ_DATA:
@@ -81,7 +85,7 @@ public class MetadataDecoder extends ByteToMessageDecoder {
                         case 20: // ext protocol
                             int extId = (int) tmp.readByte();
                             ByteBuf bufData = tmp.readBytes(msgLength - 2);
-                            Map<String, Object> dic = Util.parse(bufData);
+                            Map<String, Object> dic = Util.decode(bufData);
                             switch (extId) {
                                 case 0: // ext handshake
                                     long metadataSize = (long) dic.get("metadata_size");

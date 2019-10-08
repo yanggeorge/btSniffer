@@ -1,4 +1,4 @@
-package com.threelambda.btsearch.bt;
+package com.threelambda.btsearch.bt.metadata;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,0 +1,11 @@
+
+# set the port and ssl
+server:
+  port: 9098
+
+# set the environment
+spring:
+  profiles.active: dev
+
+udp:
+  port : 6881

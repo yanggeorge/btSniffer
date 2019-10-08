@@ -13,7 +13,7 @@ public class Msg {
         private final int metadataSize;
         private final int utMetadata;
 
-        MetadataMsg(int metadataSize, int utMetadata) {
+        public MetadataMsg(int metadataSize, int utMetadata) {
             this.metadataSize = metadataSize;
             this.utMetadata = utMetadata;
         }
@@ -32,7 +32,7 @@ public class Msg {
         private final int piece;
         private final byte[] pieceData;
 
-        MetadataPieceMsg(int piece, byte[] pieceData) {
+        public MetadataPieceMsg(int piece, byte[] pieceData) {
             this.piece = piece;
             this.pieceData = pieceData;
         }

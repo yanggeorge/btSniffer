@@ -4,7 +4,10 @@ import lombok.Data;
 import org.joda.time.DateTime;
 
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Created by ym on 2019-04-28
@@ -34,10 +37,10 @@ public class KBucket {
 
     public synchronized boolean insert(Node node) {
         boolean isNew = !nodes.contains(node);
-
-        nodes.push(node);
+        if(isNew) {
+            nodes.push(node);
+        }
         this.updateLastChanged();
-
         return isNew;
     }
 
@@ -86,9 +89,23 @@ public class KBucket {
         return candidates.size();
     }
 
+    /**
+     * 获取nodes的id列表
+     * @return
+     */
+    public synchronized Optional<Node> getNodeById(String id) {
+
+        List<Node> list = nodes.stream().filter(node -> {
+            return node.getId().rawString().equals(id);
+        }).collect(Collectors.toList());
+        if (list.size() > 0) {
+            return Optional.of(list.get(0));
+        }
+        return Optional.empty();
+    }
 
     public static void main(String[] args) throws InterruptedException {
-        KBucket kBucket = new KBucket(BitMap.fromString(Util.createPeerId()));
+        KBucket kBucket = new KBucket(BitMap.fromRawString(Util.createPeerId()));
         Node n1 = new Node(Util.createPeerId().getBytes(), "192.168.0.1", 1080);
         TimeUnit.SECONDS.sleep(1);
         Node n2 = new Node(Util.createPeerId().getBytes(), "192.168.0.2", 1081);

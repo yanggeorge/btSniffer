@@ -26,14 +26,15 @@ public class RoutingTableNode implements Serializable {
         return children[index];
     }
 
-    public synchronized boolean insert(Node node) {
-        return kBucket.insert(node);
-    }
 
     /**
      * 仅仅split不判断是否需要split
+     * <p>
+     * 当前节点的KBucket会在分裂后返回
+     *
+     * @return
      */
-    public synchronized void split() {
+    public synchronized KBucket split() {
         BitMap prefix = kBucket.getPrefix();
         //todo maxLen limit
 
@@ -58,7 +59,13 @@ public class RoutingTableNode implements Serializable {
             child.kBucket.updateLastChanged();
         }
 
+        KBucket kBucket = this.kBucket;
         this.kBucket = null;
+        return kBucket;
+    }
+
+    public String getPrefix() {
+        return this.kBucket.getPrefix().rawString();
     }
 
     public static void main(String[] args) {

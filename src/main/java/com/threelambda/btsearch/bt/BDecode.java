@@ -1,6 +1,8 @@
 package com.threelambda.btsearch.bt;
 
+import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import com.threelambda.btsearch.bt.exception.BtSearchException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -48,7 +50,7 @@ class BDecode {
     private Map<String, Object> dic() {
         byte c = this.peek();
         if (c != 'd') {
-            throw new RuntimeException("error");
+            throw new BtSearchException("error");
         }
         this.next();
         HashMap<String, Object> dic = new HashMap<String, Object>();
@@ -90,7 +92,7 @@ class BDecode {
 
         c = this.next();
         if (c != 'e') {
-            throw new RuntimeException("error");
+            throw new BtSearchException("error");
         }
 
         return dic;
@@ -108,7 +110,7 @@ class BDecode {
             if (Character.isDigit(c)) {
                 return this.string();
             }
-            throw new RuntimeException("not recognized.");
+            throw new BtSearchException("not recognized.");
         }
     }
 
@@ -117,7 +119,7 @@ class BDecode {
 
         byte c = this.next();
         if (c != 'l') {
-            throw new RuntimeException("error");
+            throw new BtSearchException("error");
         }
 
         c = this.peek();
@@ -135,12 +137,12 @@ class BDecode {
     private Long integer() {
         byte c = this.next();
         if (c != 'i') {
-            throw new RuntimeException("error");
+            throw new BtSearchException("error");
         }
         long num = this.num();
         c = this.next();
         if (c != 'e') {
-            throw new RuntimeException("error");
+            throw new BtSearchException("error");
         }
         return num;
     }
@@ -149,11 +151,13 @@ class BDecode {
         long num = this.num();
         byte c = this.next();
         if (c != ':') {
-            throw new RuntimeException("not equal ':' ");
+            throw new BtSearchException("not equal ':' ");
         }
         byte[] bytes = new byte[(int) num];
         this.buf.readBytes(bytes);
-        String s = new String(bytes);
+        //String s = new String(bytes) ; 默认使用的可能是UTF-8编码
+        //使用ISO-8859-1则在java下保证可以bytes->string->bytes可以还原
+        String s = new String(bytes, Charsets.ISO_8859_1);
         this.i += num;
         return s;
     }
@@ -173,7 +177,7 @@ class BDecode {
         if (this.i < this.n) {
             return this.buf.getByte(this.i);
         }
-        throw new RuntimeException("out of index");
+        throw new BtSearchException("out of index");
     }
 
     private byte next() {
@@ -182,6 +186,6 @@ class BDecode {
             this.i += 1;
             return c;
         }
-        throw new RuntimeException("out of index");
+        throw new BtSearchException("out of index");
     }
 }

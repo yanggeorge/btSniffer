@@ -1,4 +1,4 @@
-package com.threelambda.btsearch.bt;
+package com.threelambda.btsearch.bt.token;
 
 import lombok.Data;
 import org.joda.time.DateTime;
@@ -6,15 +6,16 @@ import org.joda.time.DateTime;
 import java.io.Serializable;
 
 /**
- * Created by ym on 2019-09-24
+ * @author ym
+ * @date 2019/10/21
  */
 @Data
 public class Token implements Serializable {
-    String data;
+    String token;
     DateTime createTime;
 
-    public Token() {
-        data = Util.randomString(5);
+    public Token(String token) {
+        this.token = token;
         createTime = DateTime.now();
     }
 }

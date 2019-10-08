@@ -1,5 +1,7 @@
 package com.threelambda.btsearch.bt;
 
+import com.google.common.base.Charsets;
+import com.threelambda.btsearch.bt.exception.BtSearchException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
@@ -14,6 +16,7 @@ import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Created by ym on 2019-04-22
@@ -22,12 +25,12 @@ public class Util {
 
     private static final Logger logger = LoggerFactory.getLogger(Util.class);
 
-    public static Map<String, Object> parse(ByteBuf buf) {
+    public static Map<String, Object> decode(ByteBuf buf) throws BtSearchException {
         BDecode bDecode = new BDecode(buf);
         return bDecode.parse();
     }
 
-    public static Map<String, Object> parse(byte[] arr) {
+    public static Map<String, Object> decode(byte[] arr) {
         BDecode bDecode = new BDecode(Unpooled.copiedBuffer(arr));
         return bDecode.parse();
     }
@@ -42,19 +45,19 @@ public class Util {
 
 
     public static ByteBuf getHandshake(String infoHash) {
-        ByteBuf handshake = Unpooled.buffer();
-        handshake.writeByte(19);
-        handshake.writeBytes("BitTorrent protocol".getBytes());
-        handshake.writeByte((byte) 0x00);
-        handshake.writeByte((byte) 0x00);
-        handshake.writeByte((byte) 0x00);
-        handshake.writeByte((byte) 0x00);
-        handshake.writeByte((byte) 0x00);
-        handshake.writeByte((byte) 0x10);
-        handshake.writeByte((byte) 0x00);
-        handshake.writeByte((byte) 0x01);
-        handshake.writeBytes(ByteBufUtil.decodeHexDump(infoHash));
-        handshake.writeBytes(Util.createPeerId().getBytes());
+        ByteBuf handshake = Unpooled.buffer()
+                .writeByte(19)
+                .writeBytes("BitTorrent protocol".getBytes())
+                .writeByte((byte) 0x00)
+                .writeByte((byte) 0x00)
+                .writeByte((byte) 0x00)
+                .writeByte((byte) 0x00)
+                .writeByte((byte) 0x00)
+                .writeByte((byte) 0x10)
+                .writeByte((byte) 0x00)
+                .writeByte((byte) 0x01)
+                .writeBytes(ByteBufUtil.decodeHexDump(infoHash))
+                .writeBytes(Util.createPeerId().getBytes());
         return handshake;
     }
 
@@ -76,11 +79,11 @@ public class Util {
     }
 
     private static ByteBuf pack(byte extId, byte[] bytes) {
-        ByteBuf buf = Unpooled.buffer();
-        buf.writeInt(bytes.length + 2);
-        buf.writeByte((byte) 20);
-        buf.writeByte(extId);
-        buf.writeBytes(bytes);
+        ByteBuf buf = Unpooled.buffer()
+                .writeInt(bytes.length + 2)
+                .writeByte((byte) 20)
+                .writeByte(extId)
+                .writeBytes(bytes);
         return buf;
     }
 
@@ -159,11 +162,11 @@ public class Util {
         return sb.toString();
     }
 
-    static String getAddr(byte[] addr) {
+    public static String getAddr(byte[] addr) {
         return String.format("%d.%d.%d.%d", addr[0] & 0xFF, addr[1] & 0xFF, addr[2] & 0xFF, addr[3] & 0xFF);
     }
 
-    static Integer getPort(byte[] port) {
+    public static Integer getPort(byte[] port) {
         return port[0] << 8 | (port[1] & 0xFF);
     }
 
@@ -196,6 +199,50 @@ public class Util {
             }
         }
         return id;
+    }
+
+    /**
+     * 与stringDecodeToInt可以相互转化
+     *
+     * @param v
+     * @return
+     */
+    public static String intEncodeToString(Integer v) {
+        ByteBuf buf = Unpooled.buffer(4);
+        buf.writeInt(v);
+        return new String(buf.array(), Charsets.ISO_8859_1);
+    }
+
+    /**
+     * 与intEncodeToString可以相互转化
+     *
+     * @param intEncodeString
+     * @return
+     */
+    public static Optional<Integer> stringDecodeToInt(String intEncodeString) {
+        try {
+            byte[] bytes = intEncodeString.getBytes(Charsets.ISO_8859_1);
+            ByteBuf byteBuf = Unpooled.copiedBuffer(bytes);
+            int val = byteBuf.readInt();
+            byteBuf.release();
+            return Optional.of(val);
+        } catch (Exception e) {
+            logger.warn("error|" + e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+
+    public static String toString(byte[] bytes) {
+        return new String(bytes, Charsets.ISO_8859_1);
+    }
+
+    public static byte[] getBytes(String s) {
+        return s.getBytes(Charsets.ISO_8859_1);
+    }
+
+    public static String hex(String s){
+        return ByteBufUtil.hexDump(getBytes(s));
     }
 
     public static void main(String[] args) {

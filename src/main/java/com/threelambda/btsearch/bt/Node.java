@@ -2,6 +2,7 @@ package com.threelambda.btsearch.bt;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.threelambda.btsearch.bt.exception.BtSearchException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
@@ -10,9 +11,12 @@ import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.net.InetSocketAddress;
-import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static java.lang.Byte.toUnsignedInt;
 
 /**
  * Created by ym on 2019-04-28
@@ -26,7 +30,7 @@ public class Node implements Serializable, Comparable<Node> {
 
     public Node(byte[] id, String ip, int port) {
         if (id.length != 20) {
-            throw new RuntimeException("must 20 byte");
+            throw new BtSearchException("must 20 byte");
         }
 
         this.id = BitMap.fromBytes(id);
@@ -34,9 +38,37 @@ public class Node implements Serializable, Comparable<Node> {
         this.lastActiveTime = DateTime.now();
     }
 
+    public Node(BitMap id, String ip, int port) {
+        this.id = id;
+        this.addr = new InetSocketAddress(ip, port);
+        this.lastActiveTime = DateTime.now();
+    }
+
+    public Node(String id, String ip, int port) {
+        this.id = BitMap.fromRawString(id);
+        this.addr = new InetSocketAddress(ip, port);
+        this.lastActiveTime = DateTime.now();
+    }
+
+    public Node(byte[] id, InetSocketAddress addr) {
+        if (id.length != 20) {
+            throw new BtSearchException("must 20 byte");
+        }
+
+        this.id = BitMap.fromBytes(id);
+        this.addr = addr;
+        this.lastActiveTime = DateTime.now();
+    }
+
+    public Node(String id, InetSocketAddress addr) {
+        this.id = BitMap.fromRawString(id);
+        this.addr = addr;
+        this.lastActiveTime = DateTime.now();
+    }
+
     public static Node fromCompactInfo(byte[] compactInfo) {
         if (compactInfo.length != 26) {
-            throw new RuntimeException("must 26 byte");
+            throw new BtSearchException("must 26 byte");
         }
 
         byte[] id = Arrays.copyOfRange(compactInfo, 0, 20);
@@ -46,21 +78,56 @@ public class Node implements Serializable, Comparable<Node> {
     }
 
     public byte[] compactNodeInfo() {
+        return encodeCompactNodeInfo(this);
+    }
+
+    public static byte[] encodeCompactNodeInfo(Node node) {
         ByteBuf buf = Unpooled.buffer(26);
-        buf.writeBytes(this.id.getData());
-        buf.writeBytes(encodeCompactAddress(this.addr));
+        buf.writeBytes(node.getId().getData());
+        buf.writeBytes(encodeCompactAddress(node.getAddr()));
         return buf.array();
     }
 
+    public static Node decodeCompactNodeInfo(byte[] compactNodeInfo) {
+        byte[] id = Arrays.copyOfRange(compactNodeInfo, 0, 20);
+        byte[] compactAddr = Arrays.copyOfRange(compactNodeInfo, 20, 26);
+        return new Node(id, decodeCompactAddress(compactAddr));
+    }
+
+    public static List<Node> decodeNodesInfo(byte[] nodes) {
+        List<Node> list = Lists.newArrayList();
+        int i = 0;
+        while (i < nodes.length - 26) {
+            list.add(decodeCompactNodeInfo(Arrays.copyOfRange(nodes, i, i + 26)));
+            i += 26;
+        }
+        return list;
+    }
+
+    public static List<Node> decodeNodesInfo(String nodes) {
+       return decodeNodesInfo(Util.getBytes(nodes));
+    }
+
     public static byte[] encodeCompactAddress(String ip, int port) {
-        byte[] info = new byte[6];
+        ByteBuf buf = Unpooled.buffer(6);
         String[] arr = ip.split("\\.");
         for (int i = 0; i < arr.length; i++) {
-            info[i] = (byte) (Integer.parseInt(arr[i]));
+            buf.writeByte(Integer.parseInt(arr[i]));
         }
-        info[4] = (byte) (port / 256);
-        info[5] = (byte) (port % 256);
-        return info;
+        buf.writeShort(port);
+        return buf.array();
+    }
+
+    public static InetSocketAddress decodeCompactAddress(byte[] compactAddr) {
+        if (compactAddr.length != 6) {
+            throw new BtSearchException("length must be 6");
+        }
+        ByteBuf buf = Unpooled.copiedBuffer(compactAddr);
+        int[] arr = new int[]{toUnsignedInt(buf.readByte()),
+                toUnsignedInt(buf.readByte()), toUnsignedInt(buf.readByte()), toUnsignedInt(buf.readByte())};
+        String ip = String.format("%d.%d.%d.%d", arr[0], arr[1], arr[2], arr[3]);
+        int port = buf.readUnsignedShort();
+        return new InetSocketAddress(ip, port);
     }
 
     public static byte[] encodeCompactAddress(InetSocketAddress addr) {
@@ -69,6 +136,12 @@ public class Node implements Serializable, Comparable<Node> {
         return encodeCompactAddress(ip, port);
     }
 
+    /**
+     * 只用id作为节点相等的判断。因为相同的地址可以有多个节点。
+     *
+     * @param o
+     * @return
+     */
     @Override
     public int compareTo(Node o) {
         return this.id.rawString().compareTo(o.getId().rawString());
@@ -87,24 +160,25 @@ public class Node implements Serializable, Comparable<Node> {
     public static void main(String[] args) {
         InetSocketAddress address = new InetSocketAddress("192.168.0.1", 1080);
         byte[] compactAddress = Node.encodeCompactAddress(address);
-        String ip = Util.getAddr(Arrays.copyOfRange(compactAddress, 0, 4));
-        int port = Util.getPort(Arrays.copyOfRange(compactAddress, 4, 6));
-        System.out.printf("%s, %d\n", ip, port);
 
-        byte[] a = new byte[]{(byte) 0xC0, (byte) 0xa8, (byte) 0x00, (byte) 0x01, (byte) 0x04, (byte) 0x38};
-        String s = new String(a, Charset.forName("ISO-8859-1"));
-        System.out.println(s.length());
-        System.out.println(ByteBufUtil.hexDump(a));
-        System.out.println(ByteBufUtil.hexDump(s.getBytes(Charset.forName("ISO-8859-1"))));
+        InetSocketAddress addr = Node.decodeCompactAddress(Util.getBytes(Util.toString(compactAddress)));
+        System.out.println(addr);
+        byte[] id = ByteBufUtil.decodeHexDump("6cc44b3cd76ddd4920f4f6c1e03ae122cef398ee");
+        String ip = "10.22.62.31";
+        int port = 40959;
+        Node node = new Node(id, ip, port);
+        byte[] compactNodeInfo = encodeCompactNodeInfo(node);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(Util.toString(compactNodeInfo));
+        String nodeInfoString = sb.toString();
+        Map<String, Object> map = new HashMap<>();
+        map.put("nodes", nodeInfoString);
+        Map<String, Object> parse = Util.decode(Util.encode(map));
+        Node node2 = decodeCompactNodeInfo(Util.getBytes((String) parse.get("nodes")));
+        System.out.println(ByteBufUtil.hexDump(node2.getId().getData()));
+        System.out.println(node2.getAddr());
 
 
-        LinkedList<Node> list = Lists.newLinkedList();
-        byte[] peerId = Util.createPeerId().getBytes();
-        Node node1 = new Node(peerId, ip, port);
-        list.add(node1);
-        Node node2 = new Node(peerId, ip, 25);
-        assert list.contains(node2) ;
-        list.remove(node2);
-        assert list.size() == 0;
     }
 }

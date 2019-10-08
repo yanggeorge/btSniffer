@@ -1,5 +1,7 @@
-package com.threelambda.btsearch.bt;
+package com.threelambda.btsearch.bt.metadata;
 
+import com.threelambda.btsearch.bt.Msg;
+import com.threelambda.btsearch.bt.Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -32,7 +34,7 @@ public class MetadataHandler extends SimpleChannelInboundHandler<Msg> {
     private byte[] metadata = null;
 
 
-    MetadataHandler(String infoHash, String addr, int port, BlockingQueue<Metadata> queue) {
+    public MetadataHandler(String infoHash, String addr, int port, BlockingQueue<Metadata> queue) {
         this.infoHash = infoHash;
         this.addr = addr;
         this.port = port;

@@ -4,7 +4,13 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.threelambda.btsearch.bt.Util.getBytes;
 
 /**
  * Created by ym on 2019-04-19
@@ -21,8 +27,7 @@ class BEncode {
         list.add(1234);
         byte[] bytes = encodeToBin(map);
         System.out.println(ByteBufUtil.hexDump(bytes));
-
-        System.out.println(Util.parse(bytes));
+        System.out.println(Util.decode(bytes));
 
     }
 
@@ -51,9 +56,9 @@ class BEncode {
 
 
     private static void encodeString(ByteBuf buf, String key) {
-        byte[] bytes = key.getBytes();
+        byte[] bytes = getBytes(key);
         int length = bytes.length;
-        buf.writeBytes(String.valueOf(length).getBytes());
+        buf.writeBytes(getBytes(String.valueOf(length)));
         buf.writeByte(':');
         buf.writeBytes(bytes);
     }
@@ -80,7 +85,7 @@ class BEncode {
 
     private static void encodeInt(ByteBuf buf, Integer o) {
         buf.writeByte('i');
-        buf.writeBytes(o.toString().getBytes());
+        buf.writeBytes(getBytes(o.toString()));
         buf.writeByte('e');
     }
 

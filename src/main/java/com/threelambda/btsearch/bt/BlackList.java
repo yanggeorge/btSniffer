@@ -3,6 +3,7 @@ package com.threelambda.btsearch.bt;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,9 +14,6 @@ import java.util.concurrent.TimeUnit;
  * Created by ym on 2019-04-28
  */
 public class BlackList {
-
-    private final Duration INTERVAL = Duration.standardMinutes(10);
-
     private final ConcurrentHashMap<String, BlockedItem> map = new ConcurrentHashMap<>();
     private final int maxSize;
     private final Duration expireAfter;
@@ -43,6 +41,10 @@ public class BlackList {
         }
     }
 
+    public void insert(InetSocketAddress addr) {
+        this.insert(addr.getHostString(), addr.getPort());
+    }
+
     public void delete(String ip, int port) {
         synchronized (this.map) {
             this.map.remove(genKey(ip, port));
@@ -66,13 +68,17 @@ public class BlackList {
         }
     }
 
+    public boolean in(InetSocketAddress addr) {
+        return this.in(addr.getHostString(), addr.getPort());
+    }
+
     public void clear() {
         List<String> keys = new ArrayList<>();
 
         DateTime now = DateTime.now();
         for (Map.Entry<String, BlockedItem> entry : map.entrySet()) {
             BlockedItem item = entry.getValue();
-            if (now.isAfter(item.getCreateTime().plus(INTERVAL))) {
+            if (now.isAfter(item.getCreateTime().plus(expireAfter))) {
                 keys.add(entry.getKey());
             }
         }
@@ -105,4 +111,7 @@ public class BlackList {
         }
         System.out.println("yes.");
     }
+
+
+
 }

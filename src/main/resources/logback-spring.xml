@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true">
+
+    <springProfile name="dev">
+        <property name="pkg.logFolder" value="/Users/ym/log/btsearch"/>
+    </springProfile>
+    <springProfile name="test">
+        <property name="pkg.logFolder" value="/var/log/btsearch" />
+    </springProfile>
+    <springProfile name="prod">
+        <property name="pkg.logFolder" value="/var/log/btsearch" />
+    </springProfile>
+
+    <property name="pkg.name" value="btsearch" />
+    <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!-- print format -->
+            <pattern>%d{ISO8601} [%thread] %-5level %logger{36}.%M\(%line\) - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="fileLogAppender"  class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${pkg.logFolder}/${pkg.name}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${pkg.logFolder}/${pkg.name}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- expiration in day -->
+            <maxHistory>30</maxHistory>
+            <maxFileSize>100MB</maxFileSize>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!-- print format -->
+            <pattern>%d{ISO8601} [%thread] %-5level %logger{36}.%M\(%line\) - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <springProfile name="dev">
+        <logger name="com.threelambda.btsearch" level="DEBUG" />
+        <root level="INFO">
+            <appender-ref ref="consoleAppender" />
+            <appender-ref ref="fileLogAppender" />
+        </root>
+    </springProfile>
+
+    <springProfile name="test">
+        <logger name="com.threelambda.btsearch" level="INFO" />
+        <root level="INFO">
+            <appender-ref ref="consoleAppender" />
+            <appender-ref ref="fileLogAppender" />
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
+        <logger name="com.threelambda.btsearch" level="INFO" />
+        <root level="INFO">
+            <appender-ref ref="fileLogAppender" />
+        </root>
+    </springProfile>
+
+</configuration>
