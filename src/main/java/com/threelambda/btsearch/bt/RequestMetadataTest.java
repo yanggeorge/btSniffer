@@ -32,7 +32,7 @@ public class RequestMetadataTest {
 
     private static void start(String ip, int port) throws InterruptedException {
 
-        final String infoHash = "e84213a794f3ccd890382a54a64ca68b7e925433";
+        final String infoHashHex = "75146d87adf9af7d17f1803fcaea9c715c73947f";
         final BlockingQueue<Metadata> queue = new LinkedBlockingQueue<>();
         EventLoopGroup group = new NioEventLoopGroup();
         try {
@@ -44,11 +44,12 @@ public class RequestMetadataTest {
                             ChannelPipeline p = sc.pipeline();
 //                            p.addLast(new LoggingHandler(LogLevel.INFO));
                             p.addLast(new MetadataDecoder());
-                            p.addLast(new MetadataHandler(infoHash, ip, port, queue));
+                            p.addLast(new MetadataHandler(infoHashHex, ip, port, queue));
                         }
                     });
-            ChannelFuture channelFuture = b.connect(new InetSocketAddress(ip, port)).sync();
-            channelFuture.channel().closeFuture().sync();
+            ChannelFuture channelFuture = b.connect(new InetSocketAddress(ip, port));
+            channelFuture.channel().closeFuture();
+            //因为是异步
             Metadata metadata = queue.poll(1, TimeUnit.SECONDS);
             if(metadata!=null) {
                 log.info("{}",Util.decode(metadata.getMetadata()));

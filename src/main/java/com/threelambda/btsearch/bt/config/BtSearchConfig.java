@@ -7,6 +7,8 @@ import com.threelambda.btsearch.bt.DHT;
 import com.threelambda.btsearch.bt.Node;
 import com.threelambda.btsearch.bt.RoutingTable;
 import com.threelambda.btsearch.bt.Util;
+import com.threelambda.btsearch.bt.metadata.Metadata;
+import com.threelambda.btsearch.bt.metadata.MetadataRequest;
 import com.threelambda.btsearch.bt.token.TokenManager;
 import com.threelambda.btsearch.bt.tran.TransactionManager;
 import com.threelambda.btsearch.bt.udp.IncomingPacketHandler;
@@ -15,6 +17,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.handler.logging.LogLevel;
@@ -24,10 +27,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -61,14 +63,14 @@ public class BtSearchConfig {
             incomingPacketHandler.setTokenManager(tokenManager());
             incomingPacketHandler.setTransactionManager(transactionManager);
             incomingPacketHandler.setDht(dht);
+            incomingPacketHandler.setMetadataRequestQueue(metadataRequestBlockingQueue());
             b.group(group).channel(NioDatagramChannel.class)
                     .option(ChannelOption.SO_BROADCAST, true)
                     .handler(new ChannelInitializer<NioDatagramChannel>() {
                         @Override
                         public void initChannel(final NioDatagramChannel ch) throws Exception {
-
                             ChannelPipeline p = ch.pipeline();
-                            p.addLast("logging", new LoggingHandler(LogLevel.INFO));
+//                            p.addLast("logging", new LoggingHandler(LogLevel.INFO));
                             p.addLast("handler", incomingPacketHandler);
                         }
                     });
@@ -122,11 +124,38 @@ public class BtSearchConfig {
     @Bean("scheduleExecutor")
     public ScheduledExecutorService scheduleExecutor() {
         ThreadFactory factory = new ThreadFactoryBuilder().setDaemon(true).setNameFormat("scheduleExecutor-%d").build();
-        return Executors.newScheduledThreadPool(4,factory);
+        return Executors.newScheduledThreadPool(4, factory);
     }
 
     @Bean
     public BlackList blackList() {
         return new BlackList(20000);
+    }
+
+    @Bean("metadataQueue")
+    public BlockingQueue<Metadata> metadataBlockingQueue() {
+        return new ArrayBlockingQueue<Metadata>(10);
+    }
+
+    @Bean("metadataRequestQueue")
+    public BlockingQueue<MetadataRequest> metadataRequestBlockingQueue() {
+        return new ArrayBlockingQueue<MetadataRequest>(10);
+    }
+
+    @Bean("metadataRequestExecutor")
+    public ExecutorService metadataRequestExecutor() {
+        ThreadFactory factory = new ThreadFactoryBuilder().setDaemon(true).setNameFormat("metadataRequestExecutor-%d").build();
+        return Executors.newSingleThreadExecutor(factory);
+    }
+
+    @Bean("metadataExecutor")
+    public ExecutorService metadataExecutor() {
+        ThreadFactory factory = new ThreadFactoryBuilder().setDaemon(true).setNameFormat("metadataExecutor-%d").build();
+        return Executors.newSingleThreadExecutor(factory);
+    }
+
+    @Bean("eventLoopGroup")
+    public EventLoopGroup eventLoopGroup() {
+        return new NioEventLoopGroup();
     }
 }

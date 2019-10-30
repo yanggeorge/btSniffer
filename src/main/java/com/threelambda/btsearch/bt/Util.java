@@ -44,7 +44,7 @@ public class Util {
     }
 
 
-    public static ByteBuf getHandshake(String infoHash) {
+    public static ByteBuf getHandshake(String infoHashHex) {
         ByteBuf handshake = Unpooled.buffer()
                 .writeByte(19)
                 .writeBytes("BitTorrent protocol".getBytes())
@@ -56,7 +56,7 @@ public class Util {
                 .writeByte((byte) 0x10)
                 .writeByte((byte) 0x00)
                 .writeByte((byte) 0x01)
-                .writeBytes(ByteBufUtil.decodeHexDump(infoHash))
+                .writeBytes(ByteBufUtil.decodeHexDump(infoHashHex))
                 .writeBytes(Util.createPeerId().getBytes());
         return handshake;
     }

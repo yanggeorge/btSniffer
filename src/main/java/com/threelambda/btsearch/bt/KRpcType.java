@@ -30,9 +30,10 @@ public enum KRpcType {
         try {
             Preconditions.checkNotNull(code, "code was null");
             return KRpcType.valueOf(code.toUpperCase());
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
+        } catch (IllegalArgumentException e) {
+            log.warn("{}", e.getMessage());
         }
+        return null;
     }
 
     @Override

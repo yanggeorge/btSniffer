@@ -8,6 +8,7 @@ import com.threelambda.btsearch.bt.KRpcType;
 import com.threelambda.btsearch.bt.Node;
 import com.threelambda.btsearch.bt.RoutingTable;
 import com.threelambda.btsearch.bt.Util;
+import com.threelambda.btsearch.bt.metadata.MetadataRequest;
 import com.threelambda.btsearch.bt.token.TokenManager;
 import com.threelambda.btsearch.bt.tran.Transaction;
 import com.threelambda.btsearch.bt.tran.TransactionManager;
@@ -25,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import static com.threelambda.btsearch.bt.tran.TransactionManager.makeResponseDataMap;
@@ -40,6 +42,7 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
     private RoutingTable rt;
     private TokenManager tokenManager;
     private TransactionManager transactionManager;
+    private BlockingQueue<MetadataRequest> metadataRequestQueue;
     private DHT dht;
 
     public IncomingPacketHandler() {
@@ -201,11 +204,22 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                         //如果是标准模式则需要保存peer
 
                         log.info("announce_peer|{}:{} info_hash={}", sender.getHostString(), port, Util.hex(infoHash));
+                        //提交请求
+                        MetadataRequest request = new MetadataRequest();
+                        request.setIp(sender.getHostString());
+                        request.setPort(port.intValue());
+                        request.setInfoHashHex(Util.hex(infoHash));
+                        try {
+                            metadataRequestQueue.offer(request, 1, TimeUnit.SECONDS);
+                        } catch (Exception e) {
+                            log.error("error", e);
+                        }
                         break;
                     }
                     default:
                         break;
                 }
+
 
             }
 

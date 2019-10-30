@@ -19,11 +19,10 @@ import java.util.concurrent.TimeUnit;
  * Created by ym on 2019-04-24
  */
 public class MetadataHandler extends SimpleChannelInboundHandler<Msg> {
-
     private Logger logger = LoggerFactory.getLogger(SimpleChannelInboundHandler.class);
 
-    private final String infoHash;
-    private final String addr;
+    private final String infoHashHex;
+    private final String ip;
     private final int port;
 
     private BlockingQueue<Metadata> queue;
@@ -33,21 +32,18 @@ public class MetadataHandler extends SimpleChannelInboundHandler<Msg> {
     private int metadataSize = -1;
     private byte[] metadata = null;
 
-
-    public MetadataHandler(String infoHash, String addr, int port, BlockingQueue<Metadata> queue) {
-        this.infoHash = infoHash;
-        this.addr = addr;
+    public MetadataHandler(String infoHashHex, String ip, int port, BlockingQueue<Metadata> queue) {
+        this.infoHashHex = infoHashHex;
+        this.ip = ip;
         this.port = port;
         this.queue = queue;
     }
 
-
     @Override
     public void channelActive(ChannelHandlerContext context) {
         //发送握手请求
-        context.writeAndFlush(Util.getHandshake(infoHash));
+        context.writeAndFlush(Util.getHandshake(infoHashHex));
     }
-
 
     @Override
     protected void channelRead0(ChannelHandlerContext context, Msg msg) {
@@ -76,11 +72,14 @@ public class MetadataHandler extends SimpleChannelInboundHandler<Msg> {
                 //已经完成，检查infoHash
                 if (checkInfoHash()) {
                     try {
-                        queue.offer(new Metadata(infoHash, metadataSize, metadata, addr, port), 1, TimeUnit.SECONDS);
+                        queue.offer(new Metadata(infoHashHex, metadataSize, metadata, ip, port), 1, TimeUnit.SECONDS);
                     } catch (InterruptedException e) {
                         logger.error("", e);
                     }
+                    logger.info("get metadata success|infoHashHex={}", infoHashHex);
                     context.close();
+                }else{
+                    logger.info("get metadata failure|infoHashHex={}|ip={}|port={}", infoHashHex, ip, port);
                 }
             }
         }
@@ -94,15 +93,13 @@ public class MetadataHandler extends SimpleChannelInboundHandler<Msg> {
         if (data.readableBytes() == this.metadataSize) {
             metadata = new byte[this.metadataSize];
             data.readBytes(metadata);
-            String infoHash = DigestUtils.sha1Hex(metadata);
-            if (this.infoHash.equals(infoHash)) {
-                logger.info("get metadata success.");
+            String currInfoHashHex = DigestUtils.sha1Hex(metadata);
+            if (this.infoHashHex.equals(currInfoHashHex)) {
                 return true;
             }
         }
         return false;
     }
-
 
     @Override
     public void exceptionCaught(ChannelHandlerContext context, Throwable cause) {

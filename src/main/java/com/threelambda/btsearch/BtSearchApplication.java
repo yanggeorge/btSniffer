@@ -24,6 +24,5 @@ public class BtSearchApplication implements CommandLineRunner {
         log.info("-----------------------");
         log.info("|      BtSearch       |");
         log.info("-----------------------");
-
     }
 }
