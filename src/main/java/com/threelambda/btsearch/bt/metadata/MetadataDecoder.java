@@ -8,6 +8,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.util.CharsetUtil;
+import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +51,7 @@ public class MetadataDecoder extends ByteToMessageDecoder {
                 ctx.close();
             }
 
-            buf.readBytes(8); // skip
+            buf.readBytes(8).release();// skip
             buffer = buf.readBytes(20);
             String infoHash = ByteBufUtil.hexDump(buffer);
             buffer.release();
@@ -104,7 +105,7 @@ public class MetadataDecoder extends ByteToMessageDecoder {
                                 default:
                                     logger.error("error");
                             }
-
+                            ReferenceCountUtil.release(bufData);
                             break;
                         case 9: // port
                             int port = tmp.readUnsignedShort();
