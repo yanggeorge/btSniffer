@@ -52,7 +52,6 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception {
         try {
             InetSocketAddress sender = msg.sender();
-            System.out.println("sender" + sender.toString());
             ByteBuf content = msg.content();
             log.debug("read={}", ByteBufUtil.hexDump(content));
             Map<String, Object> map = Util.decode(content);
@@ -90,7 +89,7 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                         String localId = Util.toString(rt.getLocalId().getData());
                         for (Node node : nodeList) {
                             String tmpTranId = transactionManager.genTranId();
-                            log.info("gen tranId={}", Util.stringDecodeToInt(tranId));
+//                            log.info("gen tranId={}", Util.stringDecodeToInt(tranId));
                             Transaction transaction = transactionManager.getPingTransaction(localId, tmpTranId, node.getAddr());
                             dht.retrySubmit(transaction);
                         }
@@ -107,7 +106,7 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                 KRpcType kRpcType = KRpcType.getByCode(queryType);
                 if (kRpcType == null) return;
 
-                log.info("request|{}", kRpcType.getCode());
+//                log.info("request|{}", kRpcType.getCode());
                 switch (kRpcType) {
                     case PING: {
                         //获取sender的id，address，生成node，插入到路由表
@@ -131,7 +130,7 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                     case FIND_NODE: {
                         String id = (String) a.get("id");
                         String targetId = (String) a.get("target");
-                        log.info("id={}|targetId={}", ByteBufUtil.hexDump(id.getBytes(Charsets.ISO_8859_1)), ByteBufUtil.hexDump(targetId.getBytes(Charsets.ISO_8859_1)));
+//                        log.info("id={}|targetId={}", ByteBufUtil.hexDump(id.getBytes(Charsets.ISO_8859_1)), ByteBufUtil.hexDump(targetId.getBytes(Charsets.ISO_8859_1)));
                         //此时可以查看id 是否在路由表里，如果不在则添加
                         KBucket kBucket = rt.getKBucket(id);
                         Optional<Node> nodeById = kBucket.getNodeById(id);
@@ -158,7 +157,7 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                         Map<String, Object> dataMap = makeResponseDataMap(tranId, r);
                         ByteBuf buf = Unpooled.buffer();
                         Util.encode(buf, dataMap);
-                        log.debug("find_node|write={}", ByteBufUtil.hexDump(buf));
+//                        log.debug("find_node|write={}", ByteBufUtil.hexDump(buf));
                         DatagramPacket packet = new DatagramPacket(buf, sender);
                         ctx.writeAndFlush(packet);
                         break;

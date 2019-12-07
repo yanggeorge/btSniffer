@@ -81,19 +81,25 @@ public class MetadataDecoder extends ByteToMessageDecoder {
                         return;
                     }
                     ByteBuf tmp = buf.readBytes(msgLength);
+                    ByteBuf bufData = null;
                     int id = (int) tmp.readByte();
                     switch (id) {
                         case 20: // ext protocol
                             int extId = (int) tmp.readByte();
-                            ByteBuf bufData = tmp.readBytes(msgLength - 2);
+                            bufData = tmp.readBytes(msgLength - 2);
                             Map<String, Object> dic = Util.decode(bufData);
                             switch (extId) {
                                 case 0: // ext handshake
-                                    long metadataSize = (long) dic.get("metadata_size");
-                                    logger.info(dic.toString());
-                                    Map<String, Object> metadataDic = (Map<String, Object>) dic.get("m");
-                                    long utMetadata = (long) metadataDic.get("ut_metadata");
-                                    list.add(new Msg.MetadataMsg((int) metadataSize, (int) utMetadata));
+                                    try {
+                                        long metadataSize = (long) dic.get("metadata_size");
+                                        logger.info(dic.toString());
+                                        Map<String, Object> metadataDic = (Map<String, Object>) dic.get("m");
+                                        long utMetadata = (long) metadataDic.get("ut_metadata");
+                                        list.add(new Msg.MetadataMsg((int) metadataSize, (int) utMetadata));
+                                    } catch (Exception e) {
+                                        logger.error("error|dic=" + dic, e);
+                                        throw new RuntimeException(e);
+                                    }
                                     break;
                                 case 1: //ut_metadata
                                     long piece = (long) dic.get("piece");
@@ -105,7 +111,6 @@ public class MetadataDecoder extends ByteToMessageDecoder {
                                 default:
                                     logger.error("error");
                             }
-                            ReferenceCountUtil.release(bufData);
                             break;
                         case 9: // port
                             int port = tmp.readUnsignedShort();
@@ -114,7 +119,9 @@ public class MetadataDecoder extends ByteToMessageDecoder {
                         default:
                             //ignore
                     }
-
+                    if (bufData != null) {
+                        bufData.release();
+                    }
                     tmp.release();
                     this.readState = ExtState.READ_MSG_LENGTH;
                     break;

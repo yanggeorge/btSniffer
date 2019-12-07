@@ -125,7 +125,7 @@ public class RoutingTable {
      * @return
      */
     public KBucket getKBucket(BitMap nodeId) {
-        log.info("nodeId={}", nodeId.toString());
+//        log.info("nodeId={}", nodeId.toString());
         RoutingTableNode rt = this.root;
         Integer commonPrefixLength = BitMap.getCommonPrefixLength(this.localId, nodeId);
 

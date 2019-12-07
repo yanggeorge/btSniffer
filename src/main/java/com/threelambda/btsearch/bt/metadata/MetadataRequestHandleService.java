@@ -80,7 +80,6 @@ public class MetadataRequestHandleService implements ApplicationListener<Context
                 MetadataRequest request = metadataRequestQueue.poll(1, TimeUnit.SECONDS);
                 if (request != null) {
                     log.info("metadataRequest={}", request);
-                    //todo 获取metadata
                     submitRequestMetadataJob(request);
                 }
             }
@@ -106,7 +105,8 @@ public class MetadataRequestHandleService implements ApplicationListener<Context
                     .handler(new ChannelInitializer<SocketChannel>() {
                         protected void initChannel(SocketChannel sc) throws Exception {
                             ChannelPipeline p = sc.pipeline();
-                            p.addLast(new ReadTimeoutHandler(5, TimeUnit.SECONDS));
+                            int timeout = 15;
+                            p.addLast(new ReadTimeoutHandler(timeout, TimeUnit.SECONDS));
                             p.addLast(new MetadataDecoder());
                             p.addLast(new MetadataHandler(infoHashHex, ip, port, metadataQueue));
                         }
