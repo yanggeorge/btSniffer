@@ -20,6 +20,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -54,7 +55,13 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
             InetSocketAddress sender = msg.sender();
             ByteBuf content = msg.content();
             log.debug("read={}", ByteBufUtil.hexDump(content));
-            Map<String, Object> map = Util.decode(content);
+            Map<String, Object> map = null;
+            try {
+                map = Util.decode(content);
+            } catch (Exception e) {
+                log.error("error|{}", e.getMessage());
+                return;
+            }
             String tranId = (String) map.get("t");
             String type = (String) map.get("y");
             if ("r".equals(type)) {
@@ -82,7 +89,7 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                         String nodeId = (String) r.get("id");
                         String nodes = (String) r.get("nodes");
                         rt.insert(new Node(nodeId, sender));
-
+                        if(StringUtils.isEmpty(nodes)) return;
                         List<Node> nodeList = Node.decodeNodesInfo(nodes);
                         if (nodeList.size() == 0) return;
 

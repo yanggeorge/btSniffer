@@ -12,7 +12,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class Metadata implements Serializable {
 
-    private String infoHash;
+    private String infoHashHex;
     private int metadataSize;
     private byte[] metadata;
     private String addr;
@@ -20,4 +20,6 @@ public class Metadata implements Serializable {
 
     public Metadata() {
     }
+
+
 }

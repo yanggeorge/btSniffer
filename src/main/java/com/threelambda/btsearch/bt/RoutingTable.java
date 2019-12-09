@@ -6,13 +6,13 @@ import com.threelambda.btsearch.bt.debug.DebugInfo;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.PriorityQueue;
+import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -84,7 +84,7 @@ public class RoutingTable {
         KBucket rtNodeBucket = rtNode.split();
 
         boolean remove = cachedKBucketMap.remove(rtNodeBucket.getPrefix().rawString(), rtNodeBucket);
-        if(!remove){
+        if (!remove) {
             throw new RuntimeException("remove false");
         }
         RoutingTableNode[] children = rtNode.getChildren();
@@ -139,7 +139,7 @@ public class RoutingTable {
             }
             rt = child;
         }
-        if(rt.getKBucket() == null){
+        if (rt.getKBucket() == null) {
             log.info("debugInfo={}", new Gson().toJson(this.build(nodeId.toString())));
         }
         return rt.getKBucket();
@@ -219,6 +219,41 @@ public class RoutingTable {
         return list;
     }
 
+    public void logMetric() {
+        try {
+            RoutingTableNode rt = this.root;
+            int height = 0;
+            int totalNode = 0;
+            Stack<RoutingTableNode> stack = new Stack<>();
+            Stack<RoutingTableNode> tmp = null;
+            stack.push(rt);
+            while (!stack.isEmpty()) {
+                height += 1;
+                tmp = new Stack<>();
+                while (!stack.isEmpty()) {
+                    RoutingTableNode node = stack.pop();
+                    if (node.getKBucket() != null) {
+                        totalNode += node.getKBucket().getSizeOfNodes();
+                    }
+                    RoutingTableNode[] children = node.getChildren();
+                    if (children != null) {
+                        if (children[0] != null) {
+                            tmp.push(children[0]);
+                        }
+                        if (children[1] != null) {
+                            tmp.push(children[1]);
+                        }
+                    }
+                }
+                stack = tmp;
+                tmp = null;
+            }
+            log.info("height={},totalNode={}", height, totalNode);
+        } catch (Exception e) {
+            log.error("error", e);
+        }
+    }
+
     public DebugInfo build(String insertNodeId) {
         Collection<Node> nodes = Collections.unmodifiableCollection(cachedNodeMap.values());
         List<DebugInfo.DebugNode> debugNodeList = nodes.stream().map(node -> {
@@ -280,8 +315,6 @@ public class RoutingTable {
         if (kBucket == null) {
             log.info("is null");
         }
-
-
-
+        rt.logMetric();
     }
 }

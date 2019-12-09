@@ -2,6 +2,7 @@ package com.threelambda.btsearch.bt.metadata;
 
 import com.threelambda.btsearch.bt.Util;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -65,7 +66,8 @@ public class MetadataRequestHandleService implements ApplicationListener<Context
                     try {
                         log.info("metadata={}", Util.decode(metadata.getMetadata()));
                     } catch (Exception e) {
-                        log.error("error", e);
+                        log.error("error|infoHashHex=" + metadata.getInfoHashHex()
+                                        + "|rawMetadata="+ ByteBufUtil.hexDump(metadata.getMetadata()), e);
                     }
                 }
             }

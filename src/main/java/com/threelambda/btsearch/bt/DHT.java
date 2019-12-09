@@ -1,14 +1,9 @@
 package com.threelambda.btsearch.bt;
 
 import com.google.common.collect.Lists;
-import com.threelambda.btsearch.bt.tran.Query;
 import com.threelambda.btsearch.bt.tran.Response;
 import com.threelambda.btsearch.bt.tran.Transaction;
 import com.threelambda.btsearch.bt.tran.TransactionManager;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
-import io.netty.channel.socket.DatagramPacket;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -17,14 +12,12 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -56,7 +49,7 @@ public class DHT implements ApplicationListener<ContextStartedEvent> {
                     if (routingTable.size() == 0) {
                         DHT.this.join();
                     } else if (transactionManager.size() == 0) {
-                        DHT.this.refresh();
+                        DHT.this.refresh(0);
                     }
                     scheduleExecutor.schedule(this, checkKBucketTimePeriod, TimeUnit.SECONDS);
                 }
@@ -73,16 +66,27 @@ public class DHT implements ApplicationListener<ContextStartedEvent> {
                 }
             };
             scheduleExecutor.schedule(blackListR, clearBlackListPeriod*6, TimeUnit.MINUTES);
+
+            //3. 每分钟查看routingTable
+            int checkRoutingTablePeriod = 1;
+            Runnable checkRoutingTable = new Runnable() {
+                @Override
+                public void run() {
+                    routingTable.logMetric();
+                    scheduleExecutor.schedule(this, checkRoutingTablePeriod, TimeUnit.MINUTES);
+                }
+            };
+            scheduleExecutor.schedule(checkRoutingTable, checkRoutingTablePeriod, TimeUnit.MINUTES);
         } catch (Exception e) {
             log.error("error", e);
         }
     }
 
-    private void refresh() {
+    private void refresh(int expireTime) {
         try {
             log.info("refresh kBucket");
             //15分钟
-            int expireTime = 15;
+            //int expireTime = 15;
             String localId = Util.toString(routingTable.getLocalId().getData());
             //如果cachedKBucket过期，则find_node
             DateTime now = DateTime.now();
@@ -99,7 +103,6 @@ public class DHT implements ApplicationListener<ContextStartedEvent> {
                     Transaction transaction = transactionManager.getFindNodeTransaction(localId, tranId, targetId, node.getAddr());
                     this.retrySubmit(transaction);
                 }
-
             }
         } catch (Exception e) {
             log.error("error", e);

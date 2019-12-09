@@ -6,6 +6,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
@@ -87,26 +88,44 @@ public class MetadataDecoder extends ByteToMessageDecoder {
                         case 20: // ext protocol
                             int extId = (int) tmp.readByte();
                             bufData = tmp.readBytes(msgLength - 2);
-                            Map<String, Object> dic = Util.decode(bufData);
+                            Map<String, Object> dic = null;
+                            try {
+                                dic = Util.decode(bufData);
+                            } catch (Exception e) {
+                                logger.error("error|{}", e.getMessage());
+                                break;
+                            }
                             switch (extId) {
                                 case 0: // ext handshake
                                     try {
-                                        long metadataSize = (long) dic.get("metadata_size");
-                                        logger.info(dic.toString());
+                                        logger.info("dic={}", dic.toString());
+                                        Long metadataSize = (Long) dic.get("metadata_size");
+                                        if(metadataSize == null){
+                                            ctx.close();
+                                            break;
+                                        }
                                         Map<String, Object> metadataDic = (Map<String, Object>) dic.get("m");
-                                        long utMetadata = (long) metadataDic.get("ut_metadata");
-                                        list.add(new Msg.MetadataMsg((int) metadataSize, (int) utMetadata));
+                                        Long utMetadata = (Long) metadataDic.get("ut_metadata");
+                                        if(utMetadata == null){
+                                            ctx.close();
+                                            break;
+                                        }
+                                        list.add(new Msg.MetadataMsg(metadataSize.intValue(), utMetadata.intValue()));
                                     } catch (Exception e) {
                                         logger.error("error|dic=" + dic, e);
                                         throw new RuntimeException(e);
                                     }
                                     break;
                                 case 1: //ut_metadata
-                                    long piece = (long) dic.get("piece");
+                                    Long piece = (Long) dic.get("piece");
+                                    if(piece == null){
+                                        ctx.close();
+                                        break;
+                                    }
                                     byte[] data = new byte[bufData.readableBytes()];
                                     bufData.readBytes(data);
                                     logger.info("piece={}, length={}", piece, data.length);
-                                    list.add(new Msg.MetadataPieceMsg((int) piece, data));
+                                    list.add(new Msg.MetadataPieceMsg(piece.intValue(), data));
                                     break;
                                 default:
                                     logger.error("error");
@@ -135,7 +154,11 @@ public class MetadataDecoder extends ByteToMessageDecoder {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.error("", cause);
+        if(cause.getMessage().contains("Connection reset by peer")){
+            logger.warn(cause.getMessage());
+        }else {
+            logger.error("", cause);
+        }
         ctx.close();
     }
 }
