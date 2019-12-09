@@ -1,7 +1,6 @@
 package com.threelambda.btsearch.bt.udp;
 
 
-import com.google.common.base.Charsets;
 import com.threelambda.btsearch.bt.DHT;
 import com.threelambda.btsearch.bt.KBucket;
 import com.threelambda.btsearch.bt.KRpcType;
