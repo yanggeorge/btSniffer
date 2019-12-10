@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
@@ -60,7 +61,8 @@ public class MetadataRequestHandleService implements ApplicationListener<Context
                 Metadata metadata = metadataQueue.poll(1, TimeUnit.SECONDS);
                 if (metadata != null) {
                     try {
-                        log.info("metadata={}", Util.decode(metadata.getMetadata()));
+                        Map<String, Object> metadataDic = Util.decode(metadata.getMetadata());
+                        log.info("infoHashHex={}|name={}|length={}", metadata.getInfoHashHex(),metadataDic.get("name"),metadataDic.get("length"));
                     } catch (Exception e) {
                         log.error("error|infoHashHex=" + metadata.getInfoHashHex()
                                         + "|rawMetadata="+ ByteBufUtil.hexDump(metadata.getMetadata()), e);

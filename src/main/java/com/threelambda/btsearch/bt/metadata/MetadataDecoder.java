@@ -36,7 +36,7 @@ public class MetadataDecoder extends ByteToMessageDecoder {
             if (buf.readableBytes() < 68) {
                 return;
             }
-            logger.info("receive 68 bytes");
+            logger.debug("receive 68 bytes");
             byte b = buf.readByte();
             if ((int) b != 19) {
                 logger.error("handshake error.");
@@ -57,7 +57,7 @@ public class MetadataDecoder extends ByteToMessageDecoder {
             buffer = buf.readBytes(20);
             String peerId = ByteBufUtil.hexDump(buffer);
             buffer.release();
-            logger.info("decode: infoHash={}, peerId={}", infoHash, peerId);
+            logger.debug("decode: infoHash={}, peerId={}", infoHash, peerId);
 
             list.add(new Msg.HandshakeOkMsg());
             this.state = State.OTHER;
@@ -122,16 +122,16 @@ public class MetadataDecoder extends ByteToMessageDecoder {
                                     }
                                     byte[] data = new byte[bufData.readableBytes()];
                                     bufData.readBytes(data);
-                                    logger.info("piece={}, length={}", piece, data.length);
+                                    logger.debug("piece={}, length={}", piece, data.length);
                                     list.add(new Msg.MetadataPieceMsg(piece.intValue(), data));
                                     break;
                                 default:
-                                    logger.error("error");
+                                    //logger.error("error");
                             }
                             break;
                         case 9: // port
                             int port = tmp.readUnsignedShort();
-                            logger.info("peer port = {}", port);
+                            logger.debug("peer port = {}", port);
                             break;
                         default:
                             //ignore
