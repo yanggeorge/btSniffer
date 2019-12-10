@@ -4,6 +4,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.threelambda.btsearch.bt.exception.BtSearchException;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.joda.time.DateTime;
@@ -18,24 +19,10 @@ import java.util.Map;
  * 解析bencoding
  * Created by ym on 2019-04-19
  */
-
 class BDecode {
     private ByteBuf buf;
     private int i;
     private int n;
-
-    public static void main(String[] args) throws Exception {
-        ByteBuf buf = Unpooled.copiedBuffer("d4:spaml1:a1:bee".getBytes());
-        BDecode bDecode = new BDecode(buf);
-        Map<String, Object> parse = bDecode.parse();
-        System.out.println(parse);
-
-        String path = "/Users/ym/tmp/venom.torrent";
-        buf = Unpooled.copiedBuffer(Files.toByteArray(new File(path)));
-        bDecode = new BDecode(buf);
-        parse = bDecode.parse();
-        System.out.println(parse);
-    }
 
     BDecode(ByteBuf buf) {
         this.buf = buf;
@@ -75,9 +62,10 @@ class BDecode {
                 dic.put("info_hash", infoHash);
             }
 
-            //暂时不保存。
+            //对pieces的值: string -> bytes -> hex string
+            //相应的编码的时候: hex string -> bytes -> string
             if ("pieces".equals(key)) {
-                val = "...";
+                val = ByteBufUtil.hexDump(Util.getBytes((String) val));
             }
 
             if ("creation date".equals(key)) {
@@ -164,11 +152,20 @@ class BDecode {
 
     private long num() {
         byte c = this.peek();
+        boolean negative = false;
+        if(c == '-'){
+            negative = true;
+            next();
+            c = this.peek();
+        }
         long num = 0;
         while (Character.isDigit(c)) {
             num = num * 10 + c - '0';
             this.next();
             c = this.peek();
+        }
+        if(negative) {
+            return -num;
         }
         return num;
     }

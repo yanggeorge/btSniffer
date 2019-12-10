@@ -3,6 +3,9 @@ package com.threelambda.btsearch.bt;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,20 +19,6 @@ import static com.threelambda.btsearch.bt.Util.getBytes;
  * Created by ym on 2019-04-19
  */
 class BEncode {
-
-
-    public static void main(String[] args) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("ym", 12);
-        List<Object> list = new ArrayList<>();
-        map.put("list", list);
-        list.add("abc");
-        list.add(1234);
-        byte[] bytes = encodeToBin(map);
-        System.out.println(ByteBufUtil.hexDump(bytes));
-        System.out.println(Util.decode(bytes));
-
-    }
 
     public static byte[] encodeToBin(Map<String, Object> map) {
         ByteBuf buf = Unpooled.buffer();
@@ -47,8 +36,18 @@ class BEncode {
         Collections.sort(keys);
 
         for (String key : keys) {
+            if("info_hash".equalsIgnoreCase(key)){
+                continue;
+            }
             BEncode.encodeString(buf, key);
-            BEncode.encodeElement(buf, map.get(key));
+            Object val = map.get(key);
+            if("pieces".equalsIgnoreCase(key)){
+                val = Util.toString(ByteBufUtil.decodeHexDump((String)val));
+            }
+            if("creation date".equalsIgnoreCase(key)){
+                val = DateTime.parse((String) val, DateTimeFormat.forPattern("yyyy-MM-dd HH:hh:ss")).getMillis()/1000;
+            }
+            BEncode.encodeElement(buf, val);
         }
 
         buf.writeByte('e');
@@ -68,6 +67,8 @@ class BEncode {
             BEncode.encodeString(buf, (String) o);
         } else if (o instanceof Integer) {
             BEncode.encodeInt(buf, (Integer) o);
+        } else if (o instanceof Long){
+            BEncode.encodeLong(buf, (Long) o);
         } else if (o instanceof List) {
             BEncode.encodeList(buf, (List) o);
         } else if (o instanceof Map) {
@@ -89,5 +90,10 @@ class BEncode {
         buf.writeByte('e');
     }
 
+    private static void encodeLong(ByteBuf buf, Long o) {
+        buf.writeByte('i');
+        buf.writeBytes(getBytes(o.toString()));
+        buf.writeByte('e');
+    }
 
 }

@@ -53,12 +53,15 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
         try {
             InetSocketAddress sender = msg.sender();
             ByteBuf content = msg.content();
+            if(content == null || content.readableBytes() == 0){
+                return;
+            }
             log.debug("read={}", ByteBufUtil.hexDump(content));
             Map<String, Object> map = null;
             try {
                 map = Util.decode(content);
             } catch (Exception e) {
-                log.error("error|{}", e.getMessage());
+                log.debug("error", e);
                 return;
             }
             String tranId = (String) map.get("t");
