@@ -7,6 +7,8 @@ import com.threelambda.btsearch.bt.KRpcType;
 import com.threelambda.btsearch.bt.Node;
 import com.threelambda.btsearch.bt.RoutingTable;
 import com.threelambda.btsearch.bt.Util;
+import com.threelambda.btsearch.bt.exception.BtSearchException;
+import com.threelambda.btsearch.bt.exception.NodeIdLengthTooBig;
 import com.threelambda.btsearch.bt.metadata.MetadataRequest;
 import com.threelambda.btsearch.bt.token.TokenManager;
 import com.threelambda.btsearch.bt.tran.Transaction;
@@ -53,7 +55,7 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
         try {
             InetSocketAddress sender = msg.sender();
             ByteBuf content = msg.content();
-            if(content == null || content.readableBytes() == 0){
+            if (content == null || content.readableBytes() == 0) {
                 return;
             }
             log.debug("read={}", ByteBufUtil.hexDump(content));
@@ -91,7 +93,7 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                         String nodeId = (String) r.get("id");
                         String nodes = (String) r.get("nodes");
                         rt.insert(new Node(nodeId, sender));
-                        if(StringUtils.isEmpty(nodes)) return;
+                        if (StringUtils.isEmpty(nodes)) return;
                         List<Node> nodeList = Node.decodeNodesInfo(nodes);
                         if (nodeList.size() == 0) return;
 
@@ -227,10 +229,13 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                     default:
                         break;
                 }
-
-
             }
-
+        }catch (BtSearchException e){
+            if(e instanceof NodeIdLengthTooBig){
+                log.error(e.getMessage());
+                return;
+            }
+            log.error("BtSearch error", e);
         } catch (Exception e) {
             log.error("error", e);
         }

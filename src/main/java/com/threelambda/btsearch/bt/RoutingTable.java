@@ -3,6 +3,7 @@ package com.threelambda.btsearch.bt;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.threelambda.btsearch.bt.debug.DebugInfo;
+import com.threelambda.btsearch.bt.exception.NodeIdLengthTooBig;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,15 +47,18 @@ public class RoutingTable {
 
     public RoutingTable insert(Node node) {
         RoutingTableNode rtNode = this.root;
-
-        Integer commonPrefixLength = BitMap.getCommonPrefixLength(this.localId, node.getId());
+        BitMap nodeId = node.getId();
+        if (nodeId.getSize() > MAX_LENGTH) {
+            throw new NodeIdLengthTooBig("nodeId size[" + nodeId.getSize() + "] too big");
+        }
+        Integer commonPrefixLength = BitMap.getCommonPrefixLength(this.localId, nodeId);
 
         int max = this.localId.getSize();
 
         int i = 0;
         //如果有子节点，则该节点的kBucket必为null，反之亦然。
         while (i < max && rtNode.getKBucket() == null) {
-            rtNode = rtNode.child(node.getId().bit(i));
+            rtNode = rtNode.child(nodeId.bit(i));
             i++;
         }
 
@@ -65,7 +69,6 @@ public class RoutingTable {
             }
             return this;
         }
-
 
         //如果i > commonPrefixLength ，则不在localId的分支上，不能分裂
         if (i > commonPrefixLength) {
@@ -92,7 +95,7 @@ public class RoutingTable {
             cachedKBucketMap.put(child.getPrefix(), child.getKBucket());
         }
 
-        RoutingTableNode child = rtNode.child(node.getId().bit(i));
+        RoutingTableNode child = rtNode.child(nodeId.bit(i));
         KBucket childKBucket = child.getKBucket();
         if (ifNotFullThenInsert(node, childKBucket)) return this;
 
