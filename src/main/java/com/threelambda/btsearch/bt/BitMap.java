@@ -2,12 +2,14 @@ package com.threelambda.btsearch.bt;
 
 import com.google.common.base.Charsets;
 import com.threelambda.btsearch.bt.exception.BtSearchException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 
 /**
  * Created by ym on 2019-04-27
  */
+@Slf4j
 public class BitMap {
 
     private int size;
@@ -150,20 +152,26 @@ public class BitMap {
     }
 
     public BitMap xor(BitMap other) {
-        BitMap distance = new BitMap(this.size);
+        try {
+            BitMap distance = new BitMap(this.size);
 
-        int div = distance.size / 8;
-        int mod = distance.size % 8;
-        for (int i = 0; i < div; i++) {
-            distance.data[i] = (byte) (this.data[i] ^ other.data[i]);
-        }
-
-        for (int i = 8 * div; i < 8 * div + mod; i++) {
-            if ((this.bit(i) ^ other.bit(i)) > 0) {
-                distance.set(i);
+            int div = distance.size / 8;
+            int mod = distance.size % 8;
+            for (int i = 0; i < div; i++) {
+                distance.data[i] = (byte) (this.data[i] ^ other.data[i]);
             }
+
+            for (int i = 8 * div; i < 8 * div + mod; i++) {
+                if ((this.bit(i) ^ other.bit(i)) > 0) {
+                    distance.set(i);
+                }
+            }
+            return distance;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            log.error("ArrayIndexOutOfBoundsException|this.id={}|this.size={}|other.id={}|other.size={}", this.toString(),this.size
+                    , other.toString(), other.size);
+            throw e;
         }
-        return distance;
     }
 
     public static BitMap newBitMapFrom(BitMap other, int size) {

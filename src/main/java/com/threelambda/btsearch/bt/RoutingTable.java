@@ -7,13 +7,7 @@ import com.threelambda.btsearch.bt.exception.NodeIdLengthTooBig;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.PriorityQueue;
-import java.util.Stack;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -189,37 +183,42 @@ public class RoutingTable {
      * @return
      */
     public List<Node> getNearest(BitMap targetId, Integer topK) {
-        BitMap target = targetId;
-        PriorityQueue<Node> maxHeap = new PriorityQueue<Node>(
-                topK,
-                (o1, o2) -> {
-                    return -target.xor(o1.getId()).compare(target.xor(o2.getId()), MAX_LENGTH);
-                }
-        );
+        try {
+            BitMap target = targetId;
+            PriorityQueue<Node> maxHeap = new PriorityQueue<Node>(
+                    topK,
+                    (o1, o2) -> {
+                        return -target.xor(o1.getId()).compare(target.xor(o2.getId()), MAX_LENGTH);
+                    }
+            );
 
-        for (Map.Entry<String, Node> entry : cachedNodeMap.entrySet()) {
-            Node cacheNode = entry.getValue();
-            if (maxHeap.size() < topK) {
-                maxHeap.add(cacheNode);
-                continue;
-            }
-
-            if (maxHeap.size() == topK) {
-                BitMap id = cacheNode.getId();
-                int cmp = id.xor(target).compare(maxHeap.peek().getId().xor(target), MAX_LENGTH);
-                if (cmp < 0) {
-                    maxHeap.poll();
+            for (Map.Entry<String, Node> entry : cachedNodeMap.entrySet()) {
+                Node cacheNode = entry.getValue();
+                if (maxHeap.size() < topK) {
                     maxHeap.add(cacheNode);
+                    continue;
+                }
+
+                if (maxHeap.size() == topK) {
+                    BitMap id = cacheNode.getId();
+                    int cmp = id.xor(target).compare(maxHeap.peek().getId().xor(target), MAX_LENGTH);
+                    if (cmp < 0) {
+                        maxHeap.poll();
+                        maxHeap.add(cacheNode);
+                    }
                 }
             }
-        }
 
-        List<Node> list = Lists.newArrayList();
-        while (!maxHeap.isEmpty()) {
-            list.add(maxHeap.poll());
+            List<Node> list = Lists.newArrayList();
+            while (!maxHeap.isEmpty()) {
+                list.add(maxHeap.poll());
+            }
+            Collections.reverse(list);
+            return list;
+        } catch (Exception e) {
+            log.error("debugInfo=" + new Gson().toJson(this.build(targetId.toString())), e);
         }
-        Collections.reverse(list);
-        return list;
+        return new ArrayList<>();
     }
 
     public void logMetric() {
