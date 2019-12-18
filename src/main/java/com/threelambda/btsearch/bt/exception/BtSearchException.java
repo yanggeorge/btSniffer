@@ -5,7 +5,6 @@ package com.threelambda.btsearch.bt.exception;
  * @date 2019/10/15
  */
 public class BtSearchException extends RuntimeException {
-
     public BtSearchException(String msg) {
         super(msg);
     }
