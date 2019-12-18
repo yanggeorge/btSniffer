@@ -96,7 +96,7 @@ public class MetadataDecoder extends ByteToMessageDecoder {
                             switch (extId) {
                                 case 0: // ext handshake
                                     try {
-                                        logger.info("dic={}", dic.toString());
+                                        logger.debug("dic={}", dic.toString());
                                         Long metadataSize = (Long) dic.get("metadata_size");
                                         if(metadataSize == null){
                                             ctx.close();
