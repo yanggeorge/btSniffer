@@ -12,17 +12,17 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Slf4j
 @EnableScheduling
 @SpringBootApplication
-public class BtSearchApplication implements CommandLineRunner {
+public class BtSnifferApplication implements CommandLineRunner {
 
     public static void main(String[] args) {
-        SpringApplication.run(BtSearchApplication.class, args).start();
+        SpringApplication.run(BtSnifferApplication.class, args).start();
         log.info("Succeed to run the Application.");
     }
 
     @Override
     public void run(String... args) throws Exception {
         log.info("-----------------------");
-        log.info("|      BtSearch       |");
+        log.info("|      BtSniffer      |");
         log.info("-----------------------");
     }
 }

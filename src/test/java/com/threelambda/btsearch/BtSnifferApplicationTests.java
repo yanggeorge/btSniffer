@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class BtSearchApplicationTests {
+public class BtSnifferApplicationTests {
 	@Autowired
 	private RoutingTable routingTable;
 
