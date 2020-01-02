@@ -41,4 +41,53 @@ public class RoutingTableTest {
         assert routingTable.getCachedKBucketMap().size() == 3;
     }
 
+
+    @Test
+    public void test2() {
+        BitMap localId = new BitMap(160).set(0).set(2).set(3);
+        System.out.println(localId.toString());
+        RoutingTable rt = new RoutingTable(localId);
+        BitMap id1 = new BitMap(160).set(0).set(2).set(3);
+        BitMap id2 = new BitMap(160).set(1).set(2).set(3);
+        BitMap id3 = new BitMap(160).set(0).set(2).set(4);
+        BitMap id4 = new BitMap(160).set(1).set(2).set(6);
+        BitMap id5 = new BitMap(160).set(0).set(2).set(6);
+        //与id5相同则不会被添加
+        BitMap id6 = new BitMap(160).set(0).set(2).set(6);
+        BitMap id7 = new BitMap(160).set(0).set(2).set(7);
+        BitMap id8 = new BitMap(160).set(0).set(2).set(8);
+        BitMap id9 = new BitMap(160).set(0).set(1).set(9);
+        BitMap id10 = new BitMap(160).set(0).set(2).set(10);
+        BitMap id11 = new BitMap(160).set(0).set(2).set(11);
+        rt.insert(new Node(id1.getData(), "0.0.0.1", 10))
+                .insert(new Node(id2, "0.0.0.2", 10))
+                .insert(new Node(id3, "0.0.0.3", 10))
+                .insert(new Node(id4, "0.0.0.4", 10))
+                .insert(new Node(id5, "0.0.0.5", 10))
+                .insert(new Node(id6, "0.0.0.6", 10))
+                .insert(new Node(id7, "0.0.0.7", 10))
+                .insert(new Node(id8, "0.0.0.8", 10))
+                .insert(new Node(id9, "0.0.0.9", 10))
+                .insert(new Node(id10, "0.0.0.10", 10))
+                .insert(new Node(id11, "0.0.0.11", 10))
+        ;
+        System.out.println("---");
+        for (Node cacheNode : rt.getCachedNodeMap().values()) {
+            System.out.println(cacheNode.getId().toString());
+        }
+        System.out.println("---");
+
+        BitMap targetId = new BitMap(160);
+        List<Node> list = rt.getNearest(targetId, 8);
+
+        for (Node node : list) {
+            System.out.println(node.getId().toString());
+        }
+
+        KBucket kBucket = rt.getKBucket(id1);
+        if (kBucket == null) {
+            log.info("is null");
+        }
+        rt.logMetric();
+    }
 }

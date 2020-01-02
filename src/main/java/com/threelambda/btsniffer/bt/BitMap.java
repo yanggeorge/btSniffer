@@ -204,45 +204,4 @@ public class BitMap {
         return i;
     }
 
-    public static void main(String[] args) {
-        BitMap bitMap = new BitMap(10);
-        bitMap.set(2);
-        System.out.println(bitMap.bit(2));
-        System.out.println(bitMap.bit(1));
-        System.out.println(bitMap.toString());
-        bitMap.unset(2);
-        System.out.println(bitMap.toString());
-        bitMap.set(2);
-
-        BitMap bitMap2 = new BitMap(10);
-        bitMap2.set(1);
-        bitMap2.set(0);
-        System.out.println(bitMap2.toString());
-        System.out.println(bitMap2.compare(bitMap, 10));
-
-        System.out.println("xor----");
-        System.out.println(bitMap.toString());
-        System.out.println(bitMap2.toString());
-        System.out.println(bitMap.xor(bitMap2).toString());
-        System.out.println();
-        byte[] data = new byte[4];
-        data[0] = 0;
-        data[1] = (byte) 255;
-        data[2] = 0;
-        data[3] = (byte) 255;
-        BitMap bitMap3 = BitMap.fromBytes(data);
-        System.out.println(bitMap3.toString());
-
-        BitMap id1 = new BitMap(160).set(0).set(2).set(3);
-        BitMap id2 = new BitMap(160).set(1).set(2).set(3);
-        System.out.println("----");
-        System.out.println(id1);
-        System.out.println(id2);
-        assert  id1.compare(id2, 160) == 1;
-        System.out.println("----");
-
-        System.out.println(BitMap.fromString("0101").toString());
-    }
-
-
 }

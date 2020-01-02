@@ -68,12 +68,4 @@ public class RoutingTableNode implements Serializable {
         return this.kBucket.getPrefix().rawString();
     }
 
-    public static void main(String[] args) {
-        BitMap prefix = new BitMap(2);
-        prefix.set(0);
-        System.out.println(prefix.toString());
-        RoutingTableNode node = new RoutingTableNode(prefix);
-        System.out.println(node.child(0));
-        System.out.println(node);
-    }
 }

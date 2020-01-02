@@ -103,15 +103,4 @@ public class KBucket {
         }
         return Optional.empty();
     }
-
-    public static void main(String[] args) throws InterruptedException {
-        KBucket kBucket = new KBucket(BitMap.fromRawString(Util.createPeerId()));
-        Node n1 = new Node(Util.createPeerId().getBytes(), "192.168.0.1", 1080);
-        TimeUnit.SECONDS.sleep(1);
-        Node n2 = new Node(Util.createPeerId().getBytes(), "192.168.0.2", 1081);
-        kBucket.insert(n2);
-        System.out.println(kBucket.getNodes().toString());
-        kBucket.insert(n1);
-        System.out.println(kBucket.getNodes().toString());
-    }
 }

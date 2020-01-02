@@ -144,15 +144,4 @@ public class TransactionManager implements Serializable {
         dataMap.put("r", r);
         return dataMap;
     }
-
-    public static void main(String[] args) {
-        TransactionManager transactionManager = new TransactionManager();
-        String tranId = transactionManager.genTranId();
-        System.out.println(tranId.length());
-        System.out.println(transactionManager.getCursor());
-        byte[] bytes = tranId.getBytes(Charset.forName("ISO-8859-1"));
-        System.out.println(ByteBufUtil.hexDump(bytes));
-        ByteBuf buf = Unpooled.copiedBuffer(bytes);
-        System.out.println(buf.readInt());
-    }
 }

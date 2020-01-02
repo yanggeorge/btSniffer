@@ -11,7 +11,10 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Test;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.BlockingQueue;
@@ -19,19 +22,25 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by ym on 2019-04-23
+ * @author ym
  */
 @Slf4j
 public class RequestMetadataTest {
 
-    public static void main(String[] args) throws Exception {
+    /**
+     * 从本地的uTorrent软件测试metadata的获取
+     */
+    @Test
+    public void requestMetadata() throws InterruptedException {
         String currentIpOnMac = Util.getCurrentIpOnMac();
         log.info("currentIp={}",currentIpOnMac);
-        start(currentIpOnMac, 40959);
+        //uTorrent在本地的端口
+        int port = 40959;
+        start(currentIpOnMac, port);
     }
 
     private static void start(String ip, int port) throws InterruptedException {
-
+        //2019-09-26-raspbian-buster.zip 的infohash
         final String infoHashHex = "75146d87adf9af7d17f1803fcaea9c715c73947f";
         final BlockingQueue<Metadata> queue = new LinkedBlockingQueue<>();
         EventLoopGroup group = new NioEventLoopGroup();
@@ -42,7 +51,7 @@ public class RequestMetadataTest {
                     .handler(new ChannelInitializer<SocketChannel>() {
                         protected void initChannel(SocketChannel sc) throws Exception {
                             ChannelPipeline p = sc.pipeline();
-//                            p.addLast(new LoggingHandler(LogLevel.INFO));
+                            p.addLast(new LoggingHandler(LogLevel.INFO));
                             p.addLast(new MetadataDecoder());
                             p.addLast(new MetadataHandler(infoHashHex, ip, port, queue));
                         }
