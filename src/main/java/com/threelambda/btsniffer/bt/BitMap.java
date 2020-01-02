@@ -1,7 +1,7 @@
 package com.threelambda.btsniffer.bt;
 
 import com.google.common.base.Charsets;
-import com.threelambda.btsniffer.bt.exception.BtSearchException;
+import com.threelambda.btsniffer.bt.exception.BtSnifferException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
@@ -29,7 +29,7 @@ public class BitMap {
 
     public int bit(int index) {
         if (index >= this.size) {
-            throw new BtSearchException("out of range");
+            throw new BtSnifferException("out of range");
         }
 
         int div = index / 8;
@@ -39,7 +39,7 @@ public class BitMap {
 
     public BitMap set(int index) {
         if (index >= this.size) {
-            throw new BtSearchException("out of range");
+            throw new BtSnifferException("out of range");
         }
         int div = index / 8;
         int mod = index % 8;
@@ -51,7 +51,7 @@ public class BitMap {
 
     public void unset(int index) {
         if (index >= this.size) {
-            throw new BtSearchException("out of range");
+            throw new BtSnifferException("out of range");
         }
         int div = index / 8;
         int mod = index % 8;
@@ -123,7 +123,7 @@ public class BitMap {
 
     public int compare(BitMap other, int prefixLen) {
         if (prefixLen > this.size || prefixLen > other.size) {
-            throw new BtSearchException("index out of range");
+            throw new BtSnifferException("index out of range");
         }
 
         int div = prefixLen / 8;

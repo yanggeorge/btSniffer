@@ -2,7 +2,7 @@ package com.threelambda.btsniffer.bt;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.threelambda.btsniffer.bt.exception.BtSearchException;
+import com.threelambda.btsniffer.bt.exception.BtSnifferException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
@@ -30,7 +30,7 @@ public class Node implements Serializable, Comparable<Node> {
 
     public Node(byte[] id, String ip, int port) {
         if (id.length != 20) {
-            throw new BtSearchException("must 20 byte");
+            throw new BtSnifferException("must 20 byte");
         }
 
         this.id = BitMap.fromBytes(id);
@@ -52,7 +52,7 @@ public class Node implements Serializable, Comparable<Node> {
 
     public Node(byte[] id, InetSocketAddress addr) {
         if (id.length != 20) {
-            throw new BtSearchException("must 20 byte");
+            throw new BtSnifferException("must 20 byte");
         }
 
         this.id = BitMap.fromBytes(id);
@@ -68,7 +68,7 @@ public class Node implements Serializable, Comparable<Node> {
 
     public static Node fromCompactInfo(byte[] compactInfo) {
         if (compactInfo.length != 26) {
-            throw new BtSearchException("must 26 byte");
+            throw new BtSnifferException("must 26 byte");
         }
 
         byte[] id = Arrays.copyOfRange(compactInfo, 0, 20);
@@ -120,7 +120,7 @@ public class Node implements Serializable, Comparable<Node> {
 
     public static InetSocketAddress decodeCompactAddress(byte[] compactAddr) {
         if (compactAddr.length != 6) {
-            throw new BtSearchException("length must be 6");
+            throw new BtSnifferException("length must be 6");
         }
         ByteBuf buf = Unpooled.copiedBuffer(compactAddr);
         int[] arr = new int[]{toUnsignedInt(buf.readByte()),

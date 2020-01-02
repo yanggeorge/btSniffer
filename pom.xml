@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.threelambda</groupId>
-    <artifactId>btsearch</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>btsearch</name>
-    <description>btsearch</description>
+    <artifactId>btsniffer</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>btsniffer</name>
+    <description>bt sniffer</description>
 
     <properties>
         <java.version>1.8</java.version>

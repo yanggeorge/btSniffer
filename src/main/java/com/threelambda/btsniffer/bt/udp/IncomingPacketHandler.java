@@ -7,7 +7,7 @@ import com.threelambda.btsniffer.bt.KRpcType;
 import com.threelambda.btsniffer.bt.Node;
 import com.threelambda.btsniffer.bt.RoutingTable;
 import com.threelambda.btsniffer.bt.Util;
-import com.threelambda.btsniffer.bt.exception.BtSearchException;
+import com.threelambda.btsniffer.bt.exception.BtSnifferException;
 import com.threelambda.btsniffer.bt.exception.NodeIdLengthTooBig;
 import com.threelambda.btsniffer.bt.metadata.MetadataRequest;
 import com.threelambda.btsniffer.bt.token.TokenManager;
@@ -230,12 +230,12 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                         break;
                 }
             }
-        }catch (BtSearchException e){
+        }catch (BtSnifferException e){
             if(e instanceof NodeIdLengthTooBig){
                 log.error(e.getMessage());
                 return;
             }
-            log.error("BtSearch error", e);
+            log.error("BtSniffer error", e);
         } catch (Exception e) {
             log.error("error", e);
         }

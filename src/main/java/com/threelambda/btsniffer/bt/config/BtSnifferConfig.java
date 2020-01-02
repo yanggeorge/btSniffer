@@ -41,10 +41,10 @@ import java.util.concurrent.ThreadFactory;
  */
 @Configuration
 @Slf4j
-public class BtSearchConfig {
+public class BtSnifferConfig {
     @Value("${udp.port}")
     private Integer port;
-    @Value("${btsearch.platform}")
+    @Value("${btsniffer.platform}")
     private String platform;
     @Autowired
     private TransactionManager transactionManager;

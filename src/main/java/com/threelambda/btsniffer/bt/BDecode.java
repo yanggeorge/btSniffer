@@ -1,7 +1,7 @@
 package com.threelambda.btsniffer.bt;
 
 import com.google.common.base.Charsets;
-import com.threelambda.btsniffer.bt.exception.BtSearchException;
+import com.threelambda.btsniffer.bt.exception.BtSnifferException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -34,7 +34,7 @@ class BDecode {
     private Map<String, Object> dic() {
         byte c = this.peek();
         if (c != 'd') {
-            throw new BtSearchException("error");
+            throw new BtSnifferException("error");
         }
         this.next();
         HashMap<String, Object> dic = new HashMap<String, Object>();
@@ -77,7 +77,7 @@ class BDecode {
 
         c = this.next();
         if (c != 'e') {
-            throw new BtSearchException("error");
+            throw new BtSnifferException("error");
         }
 
         return dic;
@@ -95,7 +95,7 @@ class BDecode {
             if (Character.isDigit(c)) {
                 return this.string();
             }
-            throw new BtSearchException("not recognized.");
+            throw new BtSnifferException("not recognized.");
         }
     }
 
@@ -104,7 +104,7 @@ class BDecode {
 
         byte c = this.next();
         if (c != 'l') {
-            throw new BtSearchException("error");
+            throw new BtSnifferException("error");
         }
 
         c = this.peek();
@@ -122,12 +122,12 @@ class BDecode {
     private Long integer() {
         byte c = this.next();
         if (c != 'i') {
-            throw new BtSearchException("error");
+            throw new BtSnifferException("error");
         }
         long num = this.num();
         c = this.next();
         if (c != 'e') {
-            throw new BtSearchException("error");
+            throw new BtSnifferException("error");
         }
         return num;
     }
@@ -136,7 +136,7 @@ class BDecode {
         long num = this.num();
         byte c = this.next();
         if (c != ':') {
-            throw new BtSearchException("not equal ':' ");
+            throw new BtSnifferException("not equal ':' ");
         }
         byte[] bytes = new byte[(int) num];
         this.buf.readBytes(bytes);
@@ -171,7 +171,7 @@ class BDecode {
         if (this.i < this.n) {
             return this.buf.getByte(this.i);
         }
-        throw new BtSearchException("out of index");
+        throw new BtSnifferException("out of index");
     }
 
     private byte next() {
@@ -180,6 +180,6 @@ class BDecode {
             this.i += 1;
             return c;
         }
-        throw new BtSearchException("out of index");
+        throw new BtSnifferException("out of index");
     }
 }

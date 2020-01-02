@@ -1,7 +1,7 @@
 package com.threelambda.btsniffer.bt;
 
 import com.google.common.base.Charsets;
-import com.threelambda.btsniffer.bt.exception.BtSearchException;
+import com.threelambda.btsniffer.bt.exception.BtSnifferException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
@@ -25,7 +25,7 @@ public class Util {
 
     private static final Logger logger = LoggerFactory.getLogger(Util.class);
 
-    public static Map<String, Object> decode(ByteBuf buf) throws BtSearchException {
+    public static Map<String, Object> decode(ByteBuf buf) throws BtSnifferException {
         BDecode bDecode = new BDecode(buf);
         return bDecode.parse();
     }
