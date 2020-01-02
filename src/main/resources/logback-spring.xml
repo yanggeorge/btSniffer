@@ -2,16 +2,16 @@
 <configuration debug="true">
 
     <springProfile name="dev">
-        <property name="pkg.logFolder" value="/Users/ym/log/btsearch"/>
+        <property name="pkg.logFolder" value="/Users/ym/log/btsniffer"/>
     </springProfile>
     <springProfile name="test">
-        <property name="pkg.logFolder" value="/var/log/btsearch" />
+        <property name="pkg.logFolder" value="/var/log/btsniffer" />
     </springProfile>
     <springProfile name="prod">
-        <property name="pkg.logFolder" value="/var/log/btsearch" />
+        <property name="pkg.logFolder" value="/var/log/btsniffer" />
     </springProfile>
 
-    <property name="pkg.name" value="btsearch" />
+    <property name="pkg.name" value="btsniffer" />
     <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <!-- print format -->
@@ -38,7 +38,7 @@
     </appender>
 
     <springProfile name="dev">
-        <logger name="com.threelambda.btsearch" level="DEBUG" />
+        <logger name="com.threelambda.btsniffer" level="DEBUG" />
         <root level="INFO">
             <appender-ref ref="consoleAppender" />
             <appender-ref ref="fileLogAppender" />
@@ -46,7 +46,7 @@
     </springProfile>
 
     <springProfile name="test">
-        <logger name="com.threelambda.btsearch" level="INFO" />
+        <logger name="com.threelambda.btsniffer" level="INFO" />
         <root level="INFO">
             <appender-ref ref="consoleAppender" />
             <appender-ref ref="fileLogAppender" />
@@ -54,7 +54,7 @@
     </springProfile>
 
     <springProfile name="prod">
-        <logger name="com.threelambda.btsearch" level="INFO" />
+        <logger name="com.threelambda.btsniffer" level="INFO" />
         <root level="INFO">
             <appender-ref ref="fileLogAppender" />
         </root>

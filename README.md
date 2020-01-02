@@ -1,2 +1,2 @@
-# btsearch
-Search latest bit torrent by title.
+# BT Sniffer
+Collect latest bit torrents.
