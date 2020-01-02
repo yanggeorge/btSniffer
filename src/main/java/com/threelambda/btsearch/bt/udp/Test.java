@@ -36,7 +36,7 @@ public class Test {
     public void test1() {
         String localId = Util.toString(routingTable.getLocalId().getData());
         String tranId = transactionManager.genTranId();
-        log.info("gen tranId={}",Util.stringDecodeToInt(tranId));
+        log.debug("gen tranId={}",Util.stringDecodeToInt(tranId));
         InetSocketAddress addr = new InetSocketAddress(localIp, 40959);
 
         Transaction transaction = transactionManager.getPingTransaction(localId, tranId, addr);

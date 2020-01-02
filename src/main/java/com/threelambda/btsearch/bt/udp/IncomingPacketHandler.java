@@ -84,7 +84,7 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                 switch (kRpcType) {
                     case PING: {
                         String nodeId = (String) r.get("id");
-                        log.info("tranId = {}", Util.stringDecodeToInt(tranId));
+                        log.debug("tranId = {}", Util.stringDecodeToInt(tranId));
                         Node node = new Node(nodeId, tran.getQuery().getAddr());
                         rt.insert(node);
                         break;
@@ -206,7 +206,7 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                         if (!tokenManager.check(sender.getHostString(), token)) {
                             return;
                         }
-                        log.info("token={} is valid", token);
+                        log.debug("token={} is valid", token);
                         Long impliedPort = (Long) a.get("implied_port");
                         if (impliedPort != null && impliedPort != 0) {
                             port = (long) sender.getPort();
