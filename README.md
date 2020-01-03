@@ -40,17 +40,8 @@ $ nohup java -jar -Dio.netty.leakDetectionLevel=advanced -XX:-OmitStackTraceInFa
 ## 查看日志
 
 1. 查看收集到的种子元信息（没有去重）
-```shell
-$ cat *.log |grep -a name= | tail 
-  2020-01-02 15:00:22,734 [metadataExecutor-0] INFO  c.t.b.b.m.MetadataRequestHandleService.handleMetadata(65) - infoHashHex=62545e5df32b5077b69c48eeb84b40552e2add5c|name=Microsoft Office 2019 Pro Plus v.1908.11929.20376 Oct 2019 By Generation2.img|length=3515320320
-  2020-01-02 15:01:06,538 [metadataExecutor-0] INFO  c.t.b.b.m.MetadataRequestHandleService.handleMetadata(65) - infoHashHex=62545e5df32b5077b69c48eeb84b40552e2add5c|name=Microsoft Office 2019 Pro Plus v.1908.11929.20376 Oct 2019 By Generation2.img|length=3515320320
-  2020-01-02 15:01:26,617 [metadataExecutor-0] INFO  c.t.b.b.m.MetadataRequestHandleService.handleMetadata(65) - infoHashHex=79e764fe57b2f042217a42126bae52be6c801c87|name=RarLab.WinRAR.v3.93.Cracked-EAT|length=null
-  2020-01-02 15:01:40,302 [metadataExecutor-0] INFO  c.t.b.b.m.MetadataRequestHandleService.handleMetadata(65) - infoHashHex=79e764fe57b2f042217a42126bae52be6c801c87|name=RarLab.WinRAR.v3.93.Cracked-EAT|length=null
-  2020-01-02 15:01:41,634 [metadataExecutor-0] INFO  c.t.b.b.m.MetadataRequestHandleService.handleMetadata(65) - infoHashHex=79e764fe57b2f042217a42126bae52be6c801c87|name=RarLab.WinRAR.v3.93.Cracked-EAT|length=null
-  2020-01-02 15:01:50,413 [metadataExecutor-0] INFO  c.t.b.b.m.MetadataRequestHandleService.handleMetadata(65) - infoHashHex=6254ecf758a0adf45a8563273804a30cb67c76b8|name=Doctor.Who.2005.7x12.Nightmare.In.Silver.HDTV.x264-FoV.mp4|length=319569132
-  2020-01-02 15:01:57,517 [metadataExecutor-0] INFO  c.t.b.b.m.MetadataRequestHandleService.handleMetadata(65) - infoHashHex=62545e5df32b5077b69c48eeb84b40552e2add5c|name=Microsoft Office 2019 Pro Plus v.1908.11929.20376 Oct 2019 By Generation2.img|length=3515320320
-  ...
-```
+
+![bt-sniffer-show](doc/sniffer-show.gif)
 
 ## 注意
 
