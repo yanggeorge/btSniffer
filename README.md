@@ -41,7 +41,8 @@ $ nohup java -jar -Dio.netty.leakDetectionLevel=advanced -XX:-OmitStackTraceInFa
 
 1. 查看收集到的种子元信息（没有去重）
 
-![bt-sniffer-show](./doc/sniffer-show.gif)
+![bt-sniffer-show](./doc/show.gif)
+
 
 ## 注意
 
