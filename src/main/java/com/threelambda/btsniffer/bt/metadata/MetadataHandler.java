@@ -76,7 +76,7 @@ public class MetadataHandler extends SimpleChannelInboundHandler<Msg> {
                     } catch (InterruptedException e) {
                         logger.error("", e);
                     }
-                    logger.info("get metadata success|infoHashHex={}", infoHashHex);
+                    logger.debug("get metadata success|infoHashHex={}", infoHashHex);
                     context.close();
                 }else{
                     logger.info("get metadata failure|infoHashHex={}|ip={}|port={}", infoHashHex, ip, port);
