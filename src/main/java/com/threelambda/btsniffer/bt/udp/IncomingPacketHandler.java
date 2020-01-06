@@ -213,7 +213,7 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                         }
                         //如果是标准模式则需要保存peer
 
-                        log.info("announce_peer|{}:{} info_hash={}", sender.getHostString(), port, Util.hex(infoHash));
+                        log.debug("announce_peer|{}:{} info_hash={}", sender.getHostString(), port, Util.hex(infoHash));
                         //提交请求
                         MetadataRequest request = new MetadataRequest();
                         request.setIp(sender.getHostString());

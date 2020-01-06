@@ -79,7 +79,7 @@ public class MetadataRequestHandleService implements ApplicationListener<Context
             while (!Thread.currentThread().isInterrupted()) {
                 MetadataRequest request = metadataRequestQueue.poll(1, TimeUnit.SECONDS);
                 if (request != null) {
-                    log.info("metadataRequest={}", request);
+                    log.debug("metadataRequest={}", request);
                     submitRequestMetadataJob(request);
                 }
             }
