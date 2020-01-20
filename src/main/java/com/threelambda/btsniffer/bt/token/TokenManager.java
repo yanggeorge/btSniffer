@@ -4,6 +4,7 @@ import com.threelambda.btsniffer.bt.Util;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -37,8 +38,19 @@ public class TokenManager {
         return token.getToken().equals(tokenString);
     }
 
+    public int size(){
+        return map.size();
+    }
+
     public void clear(){
-        //todo 每三分钟清除
+        DateTime now = DateTime.now();
+        for (Map.Entry<String, Token> entry : map.entrySet()) {
+            String key = entry.getKey();
+            Token token = entry.getValue();
+            if(now.isAfter(token.createTime.plus(timeExpireAfter))){
+                map.remove(key);
+            }
+        }
     }
 
 }

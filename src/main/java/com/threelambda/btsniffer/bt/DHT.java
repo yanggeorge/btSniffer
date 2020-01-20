@@ -1,6 +1,7 @@
 package com.threelambda.btsniffer.bt;
 
 import com.google.common.collect.Lists;
+import com.threelambda.btsniffer.bt.token.TokenManager;
 import com.threelambda.btsniffer.bt.tran.Response;
 import com.threelambda.btsniffer.bt.tran.Transaction;
 import com.threelambda.btsniffer.bt.tran.TransactionManager;
@@ -36,6 +37,8 @@ public class DHT implements ApplicationListener<ContextStartedEvent> {
     private ScheduledExecutorService scheduleExecutor;
     @Autowired
     private BlackList blackList;
+    @Autowired
+    private TokenManager tokenManager;
 
     @Override
     public void onApplicationEvent(ContextStartedEvent contextStartedEvent) {
@@ -77,6 +80,18 @@ public class DHT implements ApplicationListener<ContextStartedEvent> {
                 }
             };
             scheduleExecutor.schedule(checkRoutingTable, checkRoutingTablePeriod, TimeUnit.MINUTES);
+
+            //4. 每三分钟清除过期token
+            int checkExpiredTokenPeriod = 3;
+            Runnable checkExpiredToken = new Runnable() {
+                @Override
+                public void run() {
+                    log.info("tokenManager contains {}", tokenManager.size());
+                    tokenManager.clear();
+                    scheduleExecutor.schedule(this, checkExpiredTokenPeriod, TimeUnit.MINUTES);
+                }
+            };
+            scheduleExecutor.schedule(checkExpiredToken, checkExpiredTokenPeriod, TimeUnit.MINUTES);
         } catch (Exception e) {
             log.error("error", e);
         }
