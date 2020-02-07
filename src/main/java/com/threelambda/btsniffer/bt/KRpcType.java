@@ -31,7 +31,9 @@ public enum KRpcType {
             Preconditions.checkNotNull(code, "code was null");
             return KRpcType.valueOf(code.toUpperCase());
         } catch (IllegalArgumentException e) {
-            log.warn("{}", e.getMessage());
+            if (!e.getMessage().contains("No enum constant com.threelambda.btsniffer.bt.KRpcType.VOTE")) {
+                log.warn("{}", e.getMessage());
+            }
         }
         return null;
     }

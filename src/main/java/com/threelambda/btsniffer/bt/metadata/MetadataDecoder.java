@@ -39,14 +39,14 @@ public class MetadataDecoder extends ByteToMessageDecoder {
             logger.debug("receive 68 bytes");
             byte b = buf.readByte();
             if ((int) b != 19) {
-                logger.error("handshake error.");
+                //logger.error("handshake error.");
                 ctx.close();
             }
             ByteBuf buffer = buf.readBytes(19);
             String head = Unpooled.copiedBuffer(buffer).toString(CharsetUtil.UTF_8);
             buffer.release();
             if (!"BitTorrent protocol".equals(head)) {
-                logger.error("handshake error");
+                //logger.error("handshake error");
                 ctx.close();
             }
 
@@ -152,9 +152,7 @@ public class MetadataDecoder extends ByteToMessageDecoder {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        if(cause.getMessage().contains("Connection reset by peer")){
-            logger.warn(cause.getMessage());
-        }else {
+        if (!cause.getMessage().contains("Connection reset by peer")) {
             logger.error("", cause);
         }
         ctx.close();

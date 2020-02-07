@@ -86,8 +86,10 @@ public class DHT implements ApplicationListener<ContextStartedEvent> {
             Runnable checkExpiredToken = new Runnable() {
                 @Override
                 public void run() {
-                    log.info("tokenManager contains {}", tokenManager.size());
+                    int beforeSize = tokenManager.size();
                     tokenManager.clear();
+                    int afterSize = tokenManager.size();
+                    log.info("tokenManager contains beforeSize, afterSize={}, {}", beforeSize, afterSize);
                     scheduleExecutor.schedule(this, checkExpiredTokenPeriod, TimeUnit.MINUTES);
                 }
             };

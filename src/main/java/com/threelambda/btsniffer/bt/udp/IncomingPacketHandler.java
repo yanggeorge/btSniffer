@@ -232,7 +232,7 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
             }
         }catch (BtSnifferException e){
             if(e instanceof NodeIdLengthTooBig){
-                log.error(e.getMessage());
+                //log.error(e.getMessage());
                 return;
             }
             log.error("BtSniffer error", e);

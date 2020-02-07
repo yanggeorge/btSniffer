@@ -258,6 +258,7 @@ public class RoutingTable {
                 tmp = null;
             }
             log.info("height={},totalNode={}", height, totalNode);
+            log.info("cachedNodeMap.size={},cachedKBucketMap.size={}", this.cachedNodeMap.size(), this.cachedKBucketMap.size());
         } catch (Exception e) {
             log.error("error", e);
         }
