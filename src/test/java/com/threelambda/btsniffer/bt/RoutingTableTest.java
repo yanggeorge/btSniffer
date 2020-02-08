@@ -39,6 +39,8 @@ public class RoutingTableTest {
         assert kBucket1 != null;
 
         assert routingTable.getCachedKBucketMap().size() == 3;
+
+        routingTable.logMetric();
     }
 
 
@@ -89,5 +91,11 @@ public class RoutingTableTest {
             log.info("is null");
         }
         rt.logMetric();
+        rt.removeByAddr("/0.0.0.11:10");
+        rt.logMetric();
+        BitMap id12 = new BitMap(160).set(0).set(2).set(12);
+        rt.insert(new Node(id12, "0.0.0.10", 10));
+        rt.logMetric();
+
     }
 }

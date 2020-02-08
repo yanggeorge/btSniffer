@@ -1,6 +1,7 @@
 package com.threelambda.btsniffer.bt;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 
 import java.util.LinkedList;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
  * Created by ym on 2019-04-28
  */
 @Data
+@Slf4j
 public class KBucket {
 
     private final BitMap prefix;
@@ -51,34 +53,45 @@ public class KBucket {
         return isNew;
     }
 
-    public synchronized void replace(Node node) {
-        nodes.remove(node);
-
-        if (candidates.size() == 0) {
-            return;
+    /**
+     * 如果返回的不为 null，则是从candidates中取出的，并加入到了kBucket里
+     * @param node
+     * @return
+     */
+    public synchronized Optional<Node> replace(Node node) {
+        boolean remove = nodes.remove(node);
+        if(!remove){
+            log.warn("node has not been removed.");
+        }else{
+            log.warn("node has been removed.");
         }
 
-        Node last = candidates.removeLast();
+        if (candidates.size() == 0) {
+            return Optional.empty();
+        }
+
+        Node candi = candidates.removeLast();
         if (nodes.size() == 0) {
-            nodes.push(last);
-            return;
+            nodes.push(candi);
+            return Optional.of(candi);
         }
 
         boolean inserted = false;
         for (int i = 0; i < nodes.size(); i++) {
             Node n = nodes.get(i);
             long t = n.getLastActiveTime().getMillis();
-            if (node.getLastActiveTime().getMillis() < t) {
-                nodes.add(i, node);
+            if (candi.getLastActiveTime().getMillis() < t) {
+                nodes.add(i, candi);
                 inserted = true;
                 break;
             }
         }
 
         if (!inserted) {
-            nodes.push(node);
+            nodes.push(candi);
         }
         this.updateLastChanged();
+        return Optional.of(candi);
     }
 
     public synchronized Integer getSizeOfNodes() {

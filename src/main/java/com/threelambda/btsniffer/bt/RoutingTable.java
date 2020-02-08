@@ -1,6 +1,7 @@
 package com.threelambda.btsniffer.bt;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.threelambda.btsniffer.bt.debug.DebugInfo;
 import com.threelambda.btsniffer.bt.exception.NodeIdLengthTooBig;
@@ -115,11 +116,27 @@ public class RoutingTable {
         if (childKBucket.getSizeOfNodes() < this.bucketSize) {
             boolean isNew = childKBucket.insert(node);
             if (isNew) {
-                this.cachedNodeMap.put(node.getAddr().toString(), node);
+                putInCachedNodeMap(node);
             }
             return true;
         }
         return false;
+    }
+
+    private void putInCachedNodeMap(Node node){
+        Node nodeInCache = this.cachedNodeMap.getOrDefault(node.getAddr().toString(), null);
+
+        if(nodeInCache != null && !node.getId().rawString().equalsIgnoreCase(nodeInCache.getId().rawString())){
+            KBucket kBucket = getKBucket(nodeInCache.getId());
+            if(kBucket != null) {
+                Optional<Node> candi = kBucket.replace(node);
+                candi.ifPresent(this::putInCachedNodeMap);
+            }else{
+                log.error("kBucket is null");
+            }
+        }
+
+        this.cachedNodeMap.put(node.getAddr().toString(), node);
     }
 
     /**
@@ -156,8 +173,9 @@ public class RoutingTable {
 
         Optional<Node> optionalNode = kBucket.getNodeById(nodeId);
         optionalNode.ifPresent(node -> {
-            kBucket.replace(node);
             this.cachedNodeMap.remove(node.getAddr().toString());
+            Optional<Node> candi = kBucket.replace(node);
+            candi.ifPresent(this::putInCachedNodeMap);
         });
     }
 
@@ -233,6 +251,7 @@ public class RoutingTable {
             RoutingTableNode rt = this.root;
             int height = 0;
             int totalNode = 0;
+            Map<String, Integer> addrCountMap = Maps.newHashMap();
             Stack<RoutingTableNode> stack = new Stack<>();
             Stack<RoutingTableNode> tmp = null;
             stack.push(rt);
@@ -241,8 +260,14 @@ public class RoutingTable {
                 tmp = new Stack<>();
                 while (!stack.isEmpty()) {
                     RoutingTableNode node = stack.pop();
-                    if (node.getKBucket() != null) {
-                        totalNode += node.getKBucket().getSizeOfNodes();
+                    KBucket kBucket = node.getKBucket();
+                    if (kBucket != null) {
+                        totalNode += kBucket.getSizeOfNodes();
+                        //检查是否有相同address的node
+                        kBucket.getNodes().forEach(n -> {
+                            String addr = n.getAddr().toString();
+                            addrCountMap.put(addr, 1+ addrCountMap.getOrDefault(addr, 0));
+                        });
                     }
                     RoutingTableNode[] children = node.getChildren();
                     if (children != null) {
@@ -259,6 +284,15 @@ public class RoutingTable {
             }
             log.info("height={},totalNode={}", height, totalNode);
             log.info("cachedNodeMap.size={},cachedKBucketMap.size={}", this.cachedNodeMap.size(), this.cachedKBucketMap.size());
+
+            int dupCount = 0 ;
+            for (Map.Entry<String, Integer> entry : addrCountMap.entrySet()) {
+                if(entry.getValue()>1){
+                    dupCount +=1;
+                }
+            }
+            log.info("dupCount={}", dupCount);
+
         } catch (Exception e) {
             log.error("error", e);
         }
