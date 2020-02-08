@@ -5,7 +5,6 @@ import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- *
  * @author ym
  * @date 2019/10/14
  */
@@ -31,7 +30,8 @@ public enum KRpcType {
             Preconditions.checkNotNull(code, "code was null");
             return KRpcType.valueOf(code.toUpperCase());
         } catch (IllegalArgumentException e) {
-            if (!e.getMessage().contains("No enum constant com.threelambda.btsniffer.bt.KRpcType.VOTE")) {
+            if (!e.getMessage().contains("No enum constant com.threelambda.btsniffer.bt.KRpcType.VOTE")
+                    && !e.getMessage().contains("No enum constant com.threelambda.btsniffer.bt.KRpcType.SAMPLE_INFOHASHES")) {
                 log.warn("{}", e.getMessage());
             }
         }
