@@ -1,5 +1,6 @@
-package com.threelambda.btsniffer.bt;
+package com.threelambda.btsniffer.bt.codec;
 
+import com.threelambda.btsniffer.bt.util.Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
@@ -11,12 +12,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.threelambda.btsniffer.bt.Util.getBytes;
+import static com.threelambda.btsniffer.bt.util.Util.getBytes;
 
 /**
  * Created by ym on 2019-04-19
  */
-class BEncode {
+public class BEncode {
 
     public static byte[] encodeToBin(Map<String, Object> map) {
         ByteBuf buf = Unpooled.buffer();

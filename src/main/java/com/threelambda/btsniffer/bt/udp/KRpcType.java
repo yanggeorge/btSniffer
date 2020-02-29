@@ -1,4 +1,4 @@
-package com.threelambda.btsniffer.bt;
+package com.threelambda.btsniffer.bt.udp;
 
 
 import com.google.common.base.Preconditions;
@@ -30,8 +30,8 @@ public enum KRpcType {
             Preconditions.checkNotNull(code, "code was null");
             return KRpcType.valueOf(code.toUpperCase());
         } catch (IllegalArgumentException e) {
-            if (!e.getMessage().contains("No enum constant com.threelambda.btsniffer.bt.KRpcType.VOTE")
-                    && !e.getMessage().contains("No enum constant com.threelambda.btsniffer.bt.KRpcType.SAMPLE_INFOHASHES")) {
+            if (!e.getMessage().contains("No enum constant com.threelambda.btsniffer.bt.udp.KRpcType.VOTE")
+                    && !e.getMessage().contains("No enum constant com.threelambda.btsniffer.bt.udp.KRpcType.SAMPLE_INFOHASHES")) {
                 log.warn("{}", e.getMessage());
             }
         }

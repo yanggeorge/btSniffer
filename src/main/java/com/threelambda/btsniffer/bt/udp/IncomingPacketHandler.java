@@ -2,17 +2,14 @@ package com.threelambda.btsniffer.bt.udp;
 
 
 import com.threelambda.btsniffer.bt.DHT;
-import com.threelambda.btsniffer.bt.KBucket;
-import com.threelambda.btsniffer.bt.KRpcType;
-import com.threelambda.btsniffer.bt.Node;
-import com.threelambda.btsniffer.bt.RoutingTable;
-import com.threelambda.btsniffer.bt.Util;
 import com.threelambda.btsniffer.bt.exception.BtSnifferException;
 import com.threelambda.btsniffer.bt.exception.NodeIdLengthTooBig;
 import com.threelambda.btsniffer.bt.metadata.MetadataRequest;
-import com.threelambda.btsniffer.bt.token.TokenManager;
+import com.threelambda.btsniffer.bt.routingtable.Node;
+import com.threelambda.btsniffer.bt.routingtable.RoutingTable;
 import com.threelambda.btsniffer.bt.tran.Transaction;
 import com.threelambda.btsniffer.bt.tran.TransactionManager;
+import com.threelambda.btsniffer.bt.util.Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
@@ -84,24 +81,27 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                 switch (kRpcType) {
                     case PING: {
                         String nodeId = (String) r.get("id");
-                        log.debug("tranId = {}", Util.stringDecodeToInt(tranId));
-                        Node node = new Node(nodeId, tran.getQuery().getAddr());
-                        rt.insert(node);
+                        if (!rt.getNodeById(nodeId).isPresent()) {
+                            rt.tryInsert(new Node(nodeId, tran.getQuery().getAddr()));
+                        }
                         break;
                     }
                     case FIND_NODE: {
                         String nodeId = (String) r.get("id");
                         String nodes = (String) r.get("nodes");
-                        rt.insert(new Node(nodeId, sender));
+
+                        if (!rt.getNodeById(nodeId).isPresent()) {
+                            rt.tryInsert(new Node(nodeId, sender));
+                        }
+
                         if (StringUtils.isEmpty(nodes)) return;
                         List<Node> nodeList = Node.decodeNodesInfo(nodes);
                         if (nodeList.size() == 0) return;
 
-                        String localId = Util.toString(rt.getLocalId().getData());
+                        String localId = rt.getLocalId().rawString();
                         for (Node node : nodeList) {
                             String tmpTranId = transactionManager.genTranId();
-//                            log.info("gen tranId={}", Util.stringDecodeToInt(tranId));
-                            Transaction transaction = transactionManager.getPingTransaction(localId, tmpTranId, node.getAddr());
+                            Transaction transaction = transactionManager.buildPingTransaction(localId, tmpTranId, node.getAddr());
                             dht.retrySubmit(transaction);
                         }
                         break;
@@ -117,16 +117,15 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                 KRpcType kRpcType = KRpcType.getByCode(queryType);
                 if (kRpcType == null) return;
 
-//                log.info("request|{}", kRpcType.getCode());
                 switch (kRpcType) {
                     case PING: {
                         //获取sender的id，address，生成node，插入到路由表
-                        String id = (String) a.get("id");
-                        KBucket kBucket = rt.getKBucket(id);
-                        Optional<Node> nodeById = kBucket.getNodeById(id);
-                        if (!nodeById.isPresent()) {
-                            rt.insert(new Node(id, sender));
+                        String nodeId = (String) a.get("id");
+
+                        if (!rt.getNodeById(nodeId).isPresent()) {
+                            rt.tryInsert(new Node(nodeId, sender));
                         }
+
                         //返回response
                         Map<String, Object> r = new HashMap<>();
                         r.put("id", rt.getLocalId().rawString());
@@ -139,20 +138,16 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                         break;
                     }
                     case FIND_NODE: {
-                        String id = (String) a.get("id");
+                        String nodeId = (String) a.get("id");
                         String targetId = (String) a.get("target");
-//                        log.info("id={}|targetId={}", ByteBufUtil.hexDump(id.getBytes(Charsets.ISO_8859_1)), ByteBufUtil.hexDump(targetId.getBytes(Charsets.ISO_8859_1)));
-                        //此时可以查看id 是否在路由表里，如果不在则添加
-                        KBucket kBucket = rt.getKBucket(id);
-                        Optional<Node> nodeById = kBucket.getNodeById(id);
-                        if (!nodeById.isPresent()) {
-                            rt.insert(new Node(id, sender));
+                        if (!rt.getNodeById(nodeId).isPresent()) {
+                            rt.tryInsert(new Node(nodeId, sender));
                         }
                         //查看targetId是否在路由表里，如果在返回，如果不在返回最相邻的8个节点
                         String nodes = null;
-                        Optional<Node> optionalNode = rt.getKBucket(targetId).getNodeById(targetId);
-                        if (optionalNode.isPresent()) {
-                            Node node = optionalNode.get();
+                        Optional<Node> targetNodeOptional = rt.getNodeById(targetId);
+                        if (targetNodeOptional.isPresent()) {
+                            Node node = targetNodeOptional.get();
                             nodes = Util.toString(node.compactNodeInfo());
                         } else {
                             List<Node> nearest = rt.getNearest(targetId);
@@ -168,7 +163,6 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                         Map<String, Object> dataMap = makeResponseDataMap(tranId, r);
                         ByteBuf buf = Unpooled.buffer();
                         Util.encode(buf, dataMap);
-//                        log.debug("find_node|write={}", ByteBufUtil.hexDump(buf));
                         DatagramPacket packet = new DatagramPacket(buf, sender);
                         ctx.writeAndFlush(packet);
                         break;
@@ -188,7 +182,6 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                         Map<String, Object> dataMap = makeResponseDataMap(tranId, r);
                         ByteBuf buf = Unpooled.buffer();
                         Util.encode(buf, dataMap);
-                        log.debug("get_peers|write={}", ByteBufUtil.hexDump(buf));
                         DatagramPacket packet = new DatagramPacket(buf, sender);
                         ctx.writeAndFlush(packet);
                         break;
@@ -206,7 +199,6 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                         if (!tokenManager.check(sender.getHostString(), token)) {
                             return;
                         }
-                        log.debug("token={} is valid", token);
                         Long impliedPort = (Long) a.get("implied_port");
                         if (impliedPort != null && impliedPort != 0) {
                             port = (long) sender.getPort();
@@ -230,9 +222,8 @@ public class IncomingPacketHandler extends SimpleChannelInboundHandler<DatagramP
                         break;
                 }
             }
-        }catch (BtSnifferException e){
-            if(e instanceof NodeIdLengthTooBig){
-                //log.error(e.getMessage());
+        } catch (BtSnifferException e) {
+            if (e instanceof NodeIdLengthTooBig) {
                 return;
             }
             log.error("BtSniffer error", e);

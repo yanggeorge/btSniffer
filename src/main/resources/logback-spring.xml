@@ -39,7 +39,7 @@
 
     <springProfile name="dev">
         <logger name="com.threelambda.btsniffer" level="DEBUG" />
-        <root level="DEBUG">
+        <root level="INFO">
             <appender-ref ref="consoleAppender" />
             <appender-ref ref="fileLogAppender" />
         </root>

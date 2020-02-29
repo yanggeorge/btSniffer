@@ -1,10 +1,11 @@
-package com.threelambda.btsniffer.bt;
+package com.threelambda.btsniffer.bt.routingtable;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.threelambda.btsniffer.bt.util.BitMap;
+import com.threelambda.btsniffer.bt.util.Util;
 import com.threelambda.btsniffer.bt.exception.BtSnifferException;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import lombok.Data;
 import org.joda.time.DateTime;
@@ -12,9 +13,7 @@ import org.joda.time.DateTime;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static java.lang.Byte.toUnsignedInt;
 

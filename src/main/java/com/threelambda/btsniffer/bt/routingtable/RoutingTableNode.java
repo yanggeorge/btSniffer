@@ -1,5 +1,6 @@
-package com.threelambda.btsniffer.bt;
+package com.threelambda.btsniffer.bt.routingtable;
 
+import com.threelambda.btsniffer.bt.util.BitMap;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -14,7 +15,7 @@ public class RoutingTableNode implements Serializable {
     private RoutingTableNode[] children;
     private KBucket kBucket;
 
-    RoutingTableNode(BitMap prefix) {
+    public RoutingTableNode(BitMap prefix) {
         children = new RoutingTableNode[2];
         kBucket = new KBucket(prefix);
     }

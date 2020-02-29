@@ -1,7 +1,8 @@
 package com.threelambda.btsniffer;
 
 import com.google.common.collect.Lists;
-import com.threelambda.btsniffer.bt.RoutingTable;
+import com.threelambda.btsniffer.bt.routingtable.DynamicRoutingTable;
+import com.threelambda.btsniffer.bt.routingtable.RoutingTable;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,13 +20,8 @@ public class BtSnifferApplicationTests {
 	private RoutingTable routingTable;
 
 	@Test
-	public void contextLoads() {
-		List<String> list = Lists.newLinkedList();
-	}
-
-	@Test
 	public void test(){
-		log.info("routingTable.size={}", routingTable.size());
+		log.info("routingTable.size={}", routingTable.getTableLength());
 	}
 
 }

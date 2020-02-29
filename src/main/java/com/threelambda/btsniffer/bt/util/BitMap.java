@@ -1,4 +1,4 @@
-package com.threelambda.btsniffer.bt;
+package com.threelambda.btsniffer.bt.util;
 
 import com.google.common.base.Charsets;
 import com.threelambda.btsniffer.bt.exception.BtSnifferException;
@@ -15,7 +15,7 @@ public class BitMap {
     private int size;
     private byte[] data;
 
-    BitMap(int size) {
+    public BitMap(int size) {
         this.size = size;
         int div = size / 8;
         if ((size % 8) > 0) {
@@ -69,11 +69,17 @@ public class BitMap {
         return fromBytes(s.getBytes(Charsets.ISO_8859_1));
     }
 
-    /**
-     * @return "1001101001..."
-     */
+
     @Override
     public String toString() {
+        throw new UnsupportedOperationException("please use toHumanString() or rawString()");
+    }
+
+    /**
+     *  返回 "1001101001..."
+     * @return
+     */
+    public String toHumanString() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < this.size; i++) {
             if (this.bit(i) > 0) {
@@ -89,7 +95,7 @@ public class BitMap {
      * @param s  "1001101001..."
      * @return
      */
-    public static BitMap fromString(String s) {
+    public static BitMap fromHumanString(String s) {
         try {
             BitMap bitMap = new BitMap(s.length());
             for (int i = 0; i < s.length(); i++) {

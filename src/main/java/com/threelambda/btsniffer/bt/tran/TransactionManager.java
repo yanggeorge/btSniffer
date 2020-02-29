@@ -1,9 +1,8 @@
 package com.threelambda.btsniffer.bt.tran;
 
-import com.threelambda.btsniffer.bt.KRpcType;
-import com.threelambda.btsniffer.bt.Util;
+import com.threelambda.btsniffer.bt.udp.KRpcType;
+import com.threelambda.btsniffer.bt.util.Util;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.net.InetSocketAddress;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -53,7 +51,7 @@ public class TransactionManager implements Serializable {
         }
     }
 
-    public Transaction getPingTransaction(String queryerId, String tranId, InetSocketAddress addr) {
+    public Transaction buildPingTransaction(String queryerId, String tranId, InetSocketAddress addr) {
         ByteBuf buf = Unpooled.buffer();
         Map<String, Object> dataMap = makePingQuery(tranId, queryerId);
         Util.encode(buf, dataMap);
@@ -61,7 +59,7 @@ public class TransactionManager implements Serializable {
         return new Transaction(query, tranId);
     }
 
-    public Transaction getFindNodeTransaction(String localId, String tranId, String targetId, InetSocketAddress addr) {
+    public Transaction buildFindNodeTransaction(String localId, String tranId, String targetId, InetSocketAddress addr) {
         ByteBuf buf = Unpooled.buffer();
         Map<String, Object> dataMap = makeFindNodeQuery(tranId, localId, targetId);
         Util.encode(buf, dataMap);

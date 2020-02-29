@@ -2,14 +2,15 @@ package com.threelambda.btsniffer.bt.config;
 
 import com.google.common.base.Charsets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.threelambda.btsniffer.bt.BlackList;
+import com.threelambda.btsniffer.bt.routingtable.BlackList;
 import com.threelambda.btsniffer.bt.DHT;
-import com.threelambda.btsniffer.bt.Node;
-import com.threelambda.btsniffer.bt.RoutingTable;
-import com.threelambda.btsniffer.bt.Util;
+import com.threelambda.btsniffer.bt.routingtable.Node;
+import com.threelambda.btsniffer.bt.routingtable.DynamicRoutingTable;
+import com.threelambda.btsniffer.bt.routingtable.RoutingTable;
+import com.threelambda.btsniffer.bt.util.Util;
 import com.threelambda.btsniffer.bt.metadata.Metadata;
 import com.threelambda.btsniffer.bt.metadata.MetadataRequest;
-import com.threelambda.btsniffer.bt.token.TokenManager;
+import com.threelambda.btsniffer.bt.udp.TokenManager;
 import com.threelambda.btsniffer.bt.tran.TransactionManager;
 import com.threelambda.btsniffer.bt.udp.IncomingPacketHandler;
 import io.netty.bootstrap.Bootstrap;
@@ -95,7 +96,7 @@ public class BtSnifferConfig {
 
     @Bean
     RoutingTable routingTable() {
-        return new RoutingTable(localNode().getId());
+        return new DynamicRoutingTable(localNode().getId());
     }
 
     @Bean

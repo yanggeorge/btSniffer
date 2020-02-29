@@ -1,4 +1,4 @@
-package com.threelambda.btsniffer.bt.token;
+package com.threelambda.btsniffer.bt.udp;
 
 import lombok.Data;
 import org.joda.time.DateTime;

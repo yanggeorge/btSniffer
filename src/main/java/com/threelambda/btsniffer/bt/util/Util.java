@@ -1,6 +1,8 @@
-package com.threelambda.btsniffer.bt;
+package com.threelambda.btsniffer.bt.util;
 
 import com.google.common.base.Charsets;
+import com.threelambda.btsniffer.bt.codec.BDecode;
+import com.threelambda.btsniffer.bt.codec.BEncode;
 import com.threelambda.btsniffer.bt.exception.BtSnifferException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
@@ -12,7 +14,6 @@ import java.net.DatagramSocket;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +46,7 @@ public class Util {
 
 
     public static ByteBuf getHandshake(String infoHashHex) {
-        ByteBuf handshake = Unpooled.buffer()
+        return Unpooled.buffer()
                 .writeByte(19)
                 .writeBytes("BitTorrent protocol".getBytes())
                 .writeByte((byte) 0x00)
@@ -58,7 +59,6 @@ public class Util {
                 .writeByte((byte) 0x01)
                 .writeBytes(ByteBufUtil.decodeHexDump(infoHashHex))
                 .writeBytes(Util.createPeerId().getBytes());
-        return handshake;
     }
 
     public static ByteBuf getExtHandshake() {
@@ -79,12 +79,11 @@ public class Util {
     }
 
     private static ByteBuf pack(byte extId, byte[] bytes) {
-        ByteBuf buf = Unpooled.buffer()
+        return Unpooled.buffer()
                 .writeInt(bytes.length + 2)
                 .writeByte((byte) 20)
                 .writeByte(extId)
                 .writeBytes(bytes);
-        return buf;
     }
 
 
@@ -180,7 +179,7 @@ public class Util {
      */
     public static BitMap randomChildId(BitMap prefix) {
         String peerId = Util.createPeerId();
-        byte[] data = peerId.getBytes(Charset.forName("ISO-8859-1"));
+        byte[] data = peerId.getBytes(Charsets.ISO_8859_1);
         //设置data与prefix的相同
         byte[] prefixData = prefix.getData();
         int prefixSize = prefix.getSize();
@@ -241,7 +240,7 @@ public class Util {
         return s.getBytes(Charsets.ISO_8859_1);
     }
 
-    public static String hex(String s){
+    public static String hex(String s) {
         return ByteBufUtil.hexDump(getBytes(s));
     }
 

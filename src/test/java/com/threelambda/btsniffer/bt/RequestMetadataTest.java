@@ -3,6 +3,7 @@ package com.threelambda.btsniffer.bt;
 import com.threelambda.btsniffer.bt.metadata.Metadata;
 import com.threelambda.btsniffer.bt.metadata.MetadataDecoder;
 import com.threelambda.btsniffer.bt.metadata.MetadataHandler;
+import com.threelambda.btsniffer.bt.util.Util;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;

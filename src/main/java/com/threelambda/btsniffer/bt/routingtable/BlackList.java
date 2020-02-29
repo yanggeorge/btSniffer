@@ -1,4 +1,4 @@
-package com.threelambda.btsniffer.bt;
+package com.threelambda.btsniffer.bt.routingtable;
 
 import org.joda.time.DateTime;
 import org.joda.time.Duration;

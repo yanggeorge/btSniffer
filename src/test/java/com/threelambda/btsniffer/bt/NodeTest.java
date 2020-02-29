@@ -1,5 +1,7 @@
 package com.threelambda.btsniffer.bt;
 
+import com.threelambda.btsniffer.bt.routingtable.Node;
+import com.threelambda.btsniffer.bt.util.Util;
 import io.netty.buffer.ByteBufUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -8,8 +10,8 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.threelambda.btsniffer.bt.Node.decodeCompactNodeInfo;
-import static com.threelambda.btsniffer.bt.Node.encodeCompactNodeInfo;
+import static com.threelambda.btsniffer.bt.routingtable.Node.decodeCompactNodeInfo;
+import static com.threelambda.btsniffer.bt.routingtable.Node.encodeCompactNodeInfo;
 
 /**
  * @author ym

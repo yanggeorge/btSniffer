@@ -1,7 +1,6 @@
 package com.threelambda.btsniffer.bt.metadata;
 
-import com.threelambda.btsniffer.bt.Msg;
-import com.threelambda.btsniffer.bt.Util;
+import com.threelambda.btsniffer.bt.util.Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;

@@ -1,13 +1,15 @@
-package com.threelambda.btsniffer.bt;
+package com.threelambda.btsniffer.bt.routingtable;
 
+import com.threelambda.btsniffer.bt.util.BitMap;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -22,7 +24,9 @@ public class KBucket {
     private final LinkedList<Node> candidates;
     private DateTime lastChanged;
 
-    public KBucket(BitMap prefix) {
+    public final static Integer BUCKET_SIZE = 8;
+
+    KBucket(BitMap prefix) {
         nodes = new LinkedList<>();
         candidates = new LinkedList<>();
         lastChanged = DateTime.now();
@@ -37,20 +41,22 @@ public class KBucket {
         this.lastChanged = DateTime.now();
     }
 
-    public synchronized boolean insert(Node node) {
-        boolean isNew = !nodes.contains(node);
-        if(isNew) {
+    public synchronized boolean tryInsert(Node node) {
+        if(nodes.size() < BUCKET_SIZE) {
             nodes.push(node);
+            this.updateLastChanged();
+            return true;
         }
-        this.updateLastChanged();
-        return isNew;
+        return false;
     }
 
-    public synchronized boolean insertCandi(Node node) {
-        boolean isNew = !candidates.contains(node);
-        candidates.push(node);
-        this.updateLastChanged();
-        return isNew;
+    public synchronized boolean tryInsertCandi(Node node) {
+        if(candidates.size() < BUCKET_SIZE) {
+            candidates.push(node);
+            this.updateLastChanged();
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -115,5 +121,9 @@ public class KBucket {
             return Optional.of(list.get(0));
         }
         return Optional.empty();
+    }
+
+    public synchronized Collection<Node> getUnmodifiableNodes(){
+        return Collections.unmodifiableCollection(nodes);
     }
 }

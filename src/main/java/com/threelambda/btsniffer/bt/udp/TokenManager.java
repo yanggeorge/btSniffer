@@ -1,6 +1,6 @@
-package com.threelambda.btsniffer.bt.token;
+package com.threelambda.btsniffer.bt.udp;
 
-import com.threelambda.btsniffer.bt.Util;
+import com.threelambda.btsniffer.bt.util.Util;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 

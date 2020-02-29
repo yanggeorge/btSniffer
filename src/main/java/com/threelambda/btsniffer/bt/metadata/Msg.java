@@ -1,4 +1,4 @@
-package com.threelambda.btsniffer.bt;
+package com.threelambda.btsniffer.bt.metadata;
 
 /**
  * Created by ym on 2019-04-25

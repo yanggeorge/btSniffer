@@ -1,4 +1,6 @@
-package com.threelambda.btsniffer.bt;
+package com.threelambda.btsniffer.bt.tran;
+
+import com.threelambda.btsniffer.bt.util.Util;
 
 import java.util.Arrays;
 

@@ -1,6 +1,7 @@
-package com.threelambda.btsniffer.bt;
+package com.threelambda.btsniffer.bt.codec;
 
 import com.google.common.base.Charsets;
+import com.threelambda.btsniffer.bt.util.Util;
 import com.threelambda.btsniffer.bt.exception.BtSnifferException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
@@ -16,12 +17,12 @@ import java.util.Map;
  * 解析bencoding
  * Created by ym on 2019-04-19
  */
-class BDecode {
+public class BDecode {
     private ByteBuf buf;
     private int i;
     private int n;
 
-    BDecode(ByteBuf buf) {
+    public BDecode(ByteBuf buf) {
         this.buf = buf;
         this.i = 0;
         this.n = buf.readableBytes();

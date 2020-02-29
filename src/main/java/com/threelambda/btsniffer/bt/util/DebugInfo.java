@@ -1,6 +1,9 @@
-package com.threelambda.btsniffer.bt.debug;
+package com.threelambda.btsniffer.bt.util;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.List;
@@ -10,11 +13,18 @@ import java.util.List;
  * @date 2019/10/29
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class DebugInfo implements Serializable {
     String localId;
     String insertNodeId;
     List<DebugNode> nodes;
 
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class DebugNode implements Serializable{
         String ip;
         Integer port;

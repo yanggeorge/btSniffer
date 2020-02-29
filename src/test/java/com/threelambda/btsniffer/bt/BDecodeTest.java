@@ -1,5 +1,6 @@
 package com.threelambda.btsniffer.bt;
 
+import com.threelambda.btsniffer.bt.util.Util;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import lombok.extern.slf4j.Slf4j;

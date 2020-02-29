@@ -1,7 +1,11 @@
 package com.threelambda.btsniffer.bt;
 
 import com.google.gson.Gson;
-import com.threelambda.btsniffer.bt.debug.DebugInfo;
+import com.threelambda.btsniffer.bt.routingtable.DynamicRoutingTable;
+import com.threelambda.btsniffer.bt.routingtable.KBucket;
+import com.threelambda.btsniffer.bt.routingtable.Node;
+import com.threelambda.btsniffer.bt.util.BitMap;
+import com.threelambda.btsniffer.bt.util.DebugInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
@@ -13,7 +17,7 @@ import java.util.stream.Collectors;
  * @date 2019/10/29
  */
 @Slf4j
-public class RoutingTableTest {
+public class DynamicRoutingTableTest {
     @Test
     public void test() {
         Gson gson = new Gson();
@@ -22,23 +26,23 @@ public class RoutingTableTest {
 
         List<DebugInfo.DebugNode> nodes = debugInfo.getNodes();
         List<Node> nodeList = nodes.stream().map(debugNode -> {
-            return new Node(BitMap.fromString(debugNode.getNodeId()), debugNode.getIp(), debugNode.getPort());
+            return new Node(BitMap.fromHumanString(debugNode.getNodeId()), debugNode.getIp(), debugNode.getPort());
         }).collect(Collectors.toList());
 
 
         String localId = debugInfo.getLocalId();
-        RoutingTable routingTable = new RoutingTable(localId);
+        DynamicRoutingTable routingTable = new DynamicRoutingTable(localId);
         for (Node node : nodeList) {
-            routingTable.insert(node);
+            routingTable.tryInsert(node);
         }
 
-        KBucket kBucket = routingTable.getKBucket(BitMap.fromString(debugInfo.getInsertNodeId()));
+        KBucket kBucket = routingTable.getKBucket(BitMap.fromHumanString(debugInfo.getInsertNodeId()));
         assert kBucket!= null;
 
         KBucket kBucket1 = routingTable.getKBucket(localId);
         assert kBucket1 != null;
 
-        assert routingTable.getCachedKBucketMap().size() == 3;
+        assert routingTable.getPrefixKBucketMap().size() == 3;
 
         routingTable.logMetric();
     }
@@ -47,8 +51,8 @@ public class RoutingTableTest {
     @Test
     public void test2() {
         BitMap localId = new BitMap(160).set(0).set(2).set(3);
-        System.out.println(localId.toString());
-        RoutingTable rt = new RoutingTable(localId);
+        System.out.println(localId.toHumanString());
+        DynamicRoutingTable rt = new DynamicRoutingTable(localId);
         BitMap id1 = new BitMap(160).set(0).set(2).set(3);
         BitMap id2 = new BitMap(160).set(1).set(2).set(3);
         BitMap id3 = new BitMap(160).set(0).set(2).set(4);
@@ -61,29 +65,27 @@ public class RoutingTableTest {
         BitMap id9 = new BitMap(160).set(0).set(1).set(9);
         BitMap id10 = new BitMap(160).set(0).set(2).set(10);
         BitMap id11 = new BitMap(160).set(0).set(2).set(11);
-        rt.insert(new Node(id1.getData(), "0.0.0.1", 10))
-                .insert(new Node(id2, "0.0.0.2", 10))
-                .insert(new Node(id3, "0.0.0.3", 10))
-                .insert(new Node(id4, "0.0.0.4", 10))
-                .insert(new Node(id5, "0.0.0.5", 10))
-                .insert(new Node(id6, "0.0.0.6", 10))
-                .insert(new Node(id7, "0.0.0.7", 10))
-                .insert(new Node(id8, "0.0.0.8", 10))
-                .insert(new Node(id9, "0.0.0.9", 10))
-                .insert(new Node(id10, "0.0.0.10", 10))
-                .insert(new Node(id11, "0.0.0.11", 10))
+        rt.tryInsert(new Node(id1.getData(), "0.0.0.1", 10));
+        rt.tryInsert(new Node(id2, "0.0.0.2", 10));
+        rt.tryInsert(new Node(id3, "0.0.0.3", 10));
+        rt.tryInsert(new Node(id4, "0.0.0.4", 10));
+        rt.tryInsert(new Node(id5, "0.0.0.5", 10));
+        rt.tryInsert(new Node(id6, "0.0.0.6", 10));
+        rt.tryInsert(new Node(id7, "0.0.0.7", 10));
+        rt.tryInsert(new Node(id8, "0.0.0.8", 10));
+        rt.tryInsert(new Node(id9, "0.0.0.9", 10));
+        rt.tryInsert(new Node(id10, "0.0.0.10", 10));
+        rt.tryInsert(new Node(id11, "0.0.0.11", 10));
         ;
         System.out.println("---");
-        for (Node cacheNode : rt.getCachedNodeMap().values()) {
-            System.out.println(cacheNode.getId().toString());
-        }
+        rt.getAddrNodePairMap().values().forEach(pair->System.out.println(pair.left.getId().toHumanString()));
         System.out.println("---");
 
         BitMap targetId = new BitMap(160);
         List<Node> list = rt.getNearest(targetId, 8);
 
         for (Node node : list) {
-            System.out.println(node.getId().toString());
+            System.out.println(node.getId().toHumanString());
         }
 
         KBucket kBucket = rt.getKBucket(id1);
@@ -94,7 +96,7 @@ public class RoutingTableTest {
         rt.removeByAddr("/0.0.0.11:10");
         rt.logMetric();
         BitMap id12 = new BitMap(160).set(0).set(2).set(12);
-        rt.insert(new Node(id12, "0.0.0.10", 10));
+        rt.tryInsert(new Node(id12, "0.0.0.10", 10));
         rt.logMetric();
 
     }

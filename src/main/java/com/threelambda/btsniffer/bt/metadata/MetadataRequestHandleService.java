@@ -1,6 +1,6 @@
 package com.threelambda.btsniffer.bt.metadata;
 
-import com.threelambda.btsniffer.bt.Util;
+import com.threelambda.btsniffer.bt.util.Util;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelInitializer;

@@ -1,5 +1,7 @@
 package com.threelambda.btsniffer.bt;
 
+import com.threelambda.btsniffer.bt.util.BitMap;
+import com.threelambda.btsniffer.bt.routingtable.RoutingTableNode;
 import org.junit.Test;
 
 /**
