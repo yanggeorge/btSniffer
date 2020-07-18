@@ -121,11 +121,14 @@ public class DHT implements ApplicationListener<ContextStartedEvent> {
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                if (routingTable.getTableLength() == 0) {
+                if (routingTable.getTableLength() <= 1) {
                     DHT.this.join();
-                } else if (transactionManager.size() == 0) {
+                }
+
+                if (transactionManager.size() == 0) {
                     DHT.this.refresh(0);
                 }
+
                 scheduleExecutor.schedule(this, checkKBucketTimePeriod, TimeUnit.SECONDS);
             }
         };
